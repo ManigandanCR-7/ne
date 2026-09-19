@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 2 — Excel &amp; Spreadsheet Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FFFFFF;
+  --paper-raise:rgba(255,255,255,.60);
+  --paper-alt:rgba(21,51,92,.06);
+  --ink:#000000;
+  --ink-soft:#1A1A1A;
+  --ink-faint:#5A5A5A;
+  --line:rgba(21,51,92,.14);
+  --blue:#15335C;      --blue-soft:rgba(227,234,245,.62);
+  --amber:#C08A2E;     --amber-soft:rgba(247,237,217,.62);
+  --coral:#B4553C;     --coral-soft:rgba(245,228,222,.62);
+  --sage:#2C8C74;      --sage-soft:rgba(223,241,234,.62);
+  --violet:#2E6FA3;    --violet-soft:rgba(225,237,246,.62);
+  --cyan:#0FB8C9;      --cyan-soft:rgba(15,184,201,.14);   --cyan-ring:rgba(15,184,201,.45);
+  --radius:10px;
+  --serif:'Fraunces', Georgia, serif;
+  --sans:'Inter', system-ui, -apple-system, sans-serif;
+  --mono:'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --glass-blur:blur(18px) saturate(170%);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:var(--cyan-ring);}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; color:var(--ink); font-family:var(--sans);
+  line-height:1.6; font-size:16px; position:relative;
+  background:#FFFFFF;
+}
+h1,h2,h3,h4{font-family:var(--serif); font-weight:600; color:var(--blue); margin:0 0 .4em;}
+p{margin:0 0 1em; color:var(--ink); max-width:68ch;}
+code, .mono{font-family:var(--mono);}
+a{color:var(--blue);}
+
+/* ---- tempered-glass wallpaper: fixed, neutral frost field behind the entire course ---- */
+.page-glass{position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none;}
+.page-glass .orb{position:absolute; border-radius:50%; filter:blur(70px);}
+.page-glass .o1{width:520px; height:520px; top:-140px; left:-120px; background:radial-gradient(circle, rgba(21,51,92,.07), transparent 70%);}
+.page-glass .o2{width:460px; height:460px; top:8%; right:-160px; background:radial-gradient(circle, rgba(21,51,92,.06), transparent 70%);}
+.page-glass .o3{width:420px; height:420px; top:42%; left:-140px; background:radial-gradient(circle, rgba(21,51,92,.05), transparent 70%);}
+.page-glass .o4{width:480px; height:480px; top:66%; right:-140px; background:radial-gradient(circle, rgba(21,51,92,.05), transparent 70%);}
+.page-glass .o5{width:400px; height:400px; bottom:-160px; left:18%; background:radial-gradient(circle, rgba(21,51,92,.06), transparent 70%);}
+.page-glass .sheen{position:absolute; inset:0; background:linear-gradient(115deg, rgba(255,255,255,.6) 0%, transparent 22%, transparent 78%, rgba(255,255,255,.4) 100%); mix-blend-mode:overlay;}
+
+/* ---- fixed accent glass UI panes in the outer margin, large screens only ---- */
+.margin-glass{position:fixed; z-index:-1; pointer-events:none; display:none;}
+@media (min-width:1680px){
+  .margin-glass{display:block; right:calc(50vw - 700px); top:14%; width:190px;}
+  .margin-glass .glass-pane{margin-bottom:18px; animation:paneFloat 8s ease-in-out infinite;}
+}
+
+/* ---- cyan tap/click highlight — shared feedback for every tappable control ---- */
+.tree a, .checkitem, .qa-card .qa-toggle, .codepad-foot .qa-toggle, .mcq-opts button{
+  outline:none; -webkit-tap-highlight-color:var(--cyan-ring);
+}
+.tree a:active, .checkitem:active,
+.qa-card .qa-toggle:active, .codepad-foot .qa-toggle:active:not(:disabled),
+.mcq-opts button:active:not(:disabled){
+  background:var(--cyan-soft) !important;
+  border-color:var(--cyan) !important;
+  box-shadow:0 0 0 3px var(--cyan-ring);
+  transition:background .08s ease, box-shadow .08s ease, border-color .08s ease;
+}
+.tree a:focus-visible, .checkitem:focus-visible,
+.qa-card .qa-toggle:focus-visible, .codepad-foot .qa-toggle:focus-visible,
+.mcq-opts button:focus-visible{
+  box-shadow:0 0 0 3px var(--cyan-ring);
+}
+.mcq-opts button.correct:active, .mcq-opts button.wrong:active{box-shadow:none;}
+.simulator input[type=text]:focus, .qa-card textarea:focus, .codepad-editor:focus{
+  outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px var(--cyan-ring);
+}
+
+/* progress bar */
+#scrollbar{position:fixed; top:0; left:0; height:3px; background:var(--blue); z-index:999; width:0%; transition:width .1s linear;}
+
+/* HERO */
+.hero{
+  position:relative; overflow:hidden;
+  padding:64px 32px 48px;
+  background:#FFFFFF;
+  border-bottom:1px solid var(--line);
+}
+.hero-inner{max-width:920px; margin:0 auto; position:relative; z-index:2;}
+.hero .kicker{font-family:var(--mono); font-size:13px; color:var(--blue); letter-spacing:.02em; margin-bottom:10px;}
+.hero h1{font-size:clamp(32px,5vw,52px); line-height:1.08; max-width:16ch;}
+.hero .goal{font-size:18px; color:var(--ink-soft); max-width:62ch; margin-top:14px;}
+.flowline{display:flex; flex-wrap:wrap; gap:10px; margin-top:32px; align-items:center;}
+.flowline .chip{
+  font-family:var(--mono); font-size:13.5px; padding:8px 14px; border-radius:999px;
+  border:1px solid var(--line); background:var(--paper-raise); color:var(--ink-soft);
+  opacity:.45; transform:translateY(4px); transition:opacity .5s ease, transform .5s ease, background .3s, color .3s, border-color .3s;
+}
+.flowline .chip.on{opacity:1; transform:translateY(0); background:var(--blue); color:#fff; border-color:var(--blue);}
+.flowline .arrow{color:var(--ink-faint);}
+.meta-row{display:flex; gap:28px; flex-wrap:wrap; margin-top:28px; font-size:14px; color:var(--ink-faint);}
+.meta-row b{color:var(--ink);}
+
+/* ---- tempered-glass UI backdrop: a frosted "analytics dashboard" behind the hero copy ---- */
+.hero-glass{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  display:flex; align-items:center; justify-content:flex-end;
+}
+.hero-glass .orb{position:absolute; border-radius:50%; filter:blur(50px); opacity:.55;}
+.hero-glass .orb1{width:280px; height:280px; top:-60px; right:120px; background:radial-gradient(circle, rgba(21,51,92,.16), transparent 70%);}
+.hero-glass .orb2{width:240px; height:240px; bottom:-70px; right:-20px; background:radial-gradient(circle, rgba(21,51,92,.13), transparent 70%);}
+.hero-glass .orb3{width:180px; height:180px; top:60px; right:420px; background:radial-gradient(circle, rgba(192,138,46,.14), transparent 70%);}
+
+.glass-pane{
+  position:relative; border-radius:16px; padding:14px 16px;
+  background:linear-gradient(155deg, rgba(255,255,255,.55), rgba(255,255,255,.18));
+  border:1px solid rgba(255,255,255,.65);
+  box-shadow:0 20px 40px -12px rgba(15,37,64,.22), inset 0 1px 0 rgba(255,255,255,.8), inset 0 0 0 1px rgba(255,255,255,.15);
+  backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+  animation:paneFloat 7s ease-in-out infinite;
+}
+.glass-pane::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(120deg, rgba(255,255,255,.55) 0%, transparent 30%);
+  mix-blend-mode:overlay;
+}
+.glass-pane .gp-lbl{font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); letter-spacing:.03em; margin-bottom:8px; display:flex; align-items:center; gap:6px;}
+.glass-pane .gp-lbl .dot{width:6px; height:6px; border-radius:50%; background:var(--sage); flex:none;}
+
+/* dashboard composition */
+.dash-composition{position:relative; width:460px; height:360px; margin-right:12px;}
+.pane-chart{position:absolute; top:6px; right:20px; width:230px; transform:rotate(-3deg); animation-delay:.2s;}
+.pane-chart .bars{display:flex; align-items:flex-end; gap:7px; height:70px;}
+.pane-chart .bars i{flex:1; border-radius:4px 4px 0 0; background:linear-gradient(180deg, var(--sage), rgba(44,140,116,.35)); display:block;}
+.pane-chart .bars i:nth-child(1){height:38%;} .pane-chart .bars i:nth-child(2){height:60%;}
+.pane-chart .bars i:nth-child(3){height:45%;} .pane-chart .bars i:nth-child(4){height:82%;}
+.pane-chart .bars i:nth-child(5){height:64%;} .pane-chart .bars i:nth-child(6){height:95%; background:linear-gradient(180deg, var(--blue), rgba(21,51,92,.35));}
+
+.pane-kpi{position:absolute; top:130px; right:260px; width:150px; transform:rotate(2deg); animation-delay:1.1s;}
+.pane-kpi .gp-val{font-family:var(--serif); font-size:28px; font-weight:600; color:var(--ink);}
+.pane-kpi .gp-trend{font-family:var(--mono); font-size:11px; color:var(--sage); margin-top:2px;}
+
+.pane-code{position:absolute; top:190px; right:70px; width:210px; transform:rotate(4deg); animation-delay:.6s; background:linear-gradient(155deg, rgba(15,37,64,.72), rgba(15,37,64,.42));border-color:rgba(255,255,255,.25);}
+.pane-code .gp-lbl{color:#B9C6DA;}
+.pane-code .gp-lbl .dot{background:var(--amber);}
+.pane-code .cl{font-family:var(--mono); font-size:11px; color:#CFE0F4; margin:4px 0; display:flex; gap:8px;}
+.pane-code .cl b{color:#8FE0BC; font-weight:600;}
+.pane-code .cl span{color:#F2B98A;}
+
+.pane-table{position:absolute; top:20px; right:300px; width:130px; transform:rotate(-5deg); animation-delay:1.6s;}
+.pane-table .row{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); padding:4px 0; border-bottom:1px dashed rgba(21,51,92,.12);}
+.pane-table .row:last-child{border-bottom:none;}
+.pane-table .row b{color:var(--blue);}
+
+@keyframes paneFloat{
+  0%,100%{transform:translateY(0) rotate(var(--r,0deg));}
+  50%{transform:translateY(-9px) rotate(var(--r,0deg));}
+}
+.pane-chart{--r:-3deg;} .pane-kpi{--r:2deg;} .pane-code{--r:4deg;} .pane-table{--r:-5deg;}
+
+@media (max-width: 980px){
+  .hero-glass{display:none;}
+}
+
+/* LAYOUT */
+.layout{display:grid; grid-template-columns:260px 1fr; max-width:1280px; margin:0 auto; gap:0; position:relative;}
+.sidebar{
+  border-right:1px solid var(--line); padding:32px 20px; position:sticky; top:0;
+  align-self:start; height:100vh; overflow-y:auto;
+  background:rgba(255,255,255,.30);
+  backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+}
+.sidebar h4{font-size:12px; text-transform:none; color:var(--ink-faint); font-family:var(--sans); font-weight:600; margin-bottom:14px;}
+.tree{list-style:none; margin:0; padding:0;}
+.tree li{margin:0; position:relative;}
+.tree a{
+  display:flex; gap:10px; align-items:flex-start; padding:8px 8px 8px 4px; border-radius:8px;
+  text-decoration:none; color:var(--blue); font-size:14.5px; border-left:2px solid transparent;
+}
+.tree a:hover{background:var(--paper-alt); color:var(--blue);}
+.tree a.active{color:var(--blue); border-left:2px solid var(--blue); background:var(--blue-soft); font-weight:600;}
+.tree .num{font-family:var(--mono); color:var(--ink-faint); font-size:13px; min-width:18px;}
+.tree a.active .num{color:var(--blue);}
+.tree .sub{list-style:none; margin:2px 0 6px 26px; padding-left:10px; border-left:1px dashed var(--line);}
+.tree .sub a{font-size:13px; padding:4px 6px;}
+
+/* ---- every content surface becomes tempered glass over the fixed wallpaper ---- */
+.card, .objectives, .icongrid .item, .flowchain .fnode, .flowline .chip,
+.compare .col, .rowcards .rc, .toolstep, .foldertree, .simulator, .qa-card,
+.gfront, .kb, .mindset-pair .mp, .checkitem, .mistake, .qcard, .glossary .gcard,
+table.dataset, .mini-table{
+  backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+  box-shadow:0 10px 28px -10px rgba(15,37,64,.14), inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+main{padding:0 40px 100px; min-width:0;}
+section{max-width:760px; padding-top:72px; margin:0 auto; scroll-margin-top:20px;}
+section:first-of-type{padding-top:56px;}
+.section-tag{font-family:var(--mono); font-size:12.5px; color:var(--blue); margin-bottom:8px;}
+.section-title{font-size:30px; margin-bottom:6px;}
+.section-sub{font-size:15px; color:var(--ink-faint); margin-bottom:28px;}
+
+.card{background:var(--paper-raise); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; margin:14px 0;}
+.card h4{font-size:15px; margin-bottom:8px;}
+
+.objectives{background:var(--paper-raise); border:1px solid var(--line); border-left:3px solid var(--blue); border-radius:var(--radius); padding:18px 22px; margin:20px 0;}
+.objectives .label{font-family:var(--mono); font-size:12px; color:var(--blue); margin-bottom:8px;}
+.objectives ul{margin:0; padding-left:20px;}
+.objectives li{color:var(--ink-soft); margin-bottom:4px; font-size:14.5px;}
+
+h3.step-h{font-size:20px; margin-top:40px; padding-top:6px; border-top:1px solid var(--line);}
+
+/* chip grid for examples */
+.chipgrid{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0;}
+.chipgrid .datum{
+  font-family:var(--mono); background:var(--amber-soft); color:#7A5410; border:1px solid #ECD9AE;
+  padding:6px 12px; border-radius:6px; font-size:14px;
+}
+
+/* icon grid (data sources) */
+.icongrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin:16px 0;}
+.icongrid .item{
+  background:var(--paper-raise); border:1px solid var(--line); border-radius:8px; padding:14px 10px;
+  text-align:center; font-size:13px; color:var(--ink-soft);
+}
+.icongrid .item .ic{font-size:22px; display:block; margin-bottom:6px;}
+
+/* flow diagram (vertical) */
+.flowchain{display:flex; flex-direction:column; margin:22px 0; gap:0;}
+.flowchain .fnode{
+  border:1px solid var(--line); background:var(--paper-raise); border-radius:8px;
+  padding:12px 16px; font-size:14.5px; font-weight:500; display:flex; align-items:center; gap:10px;
+  opacity:0; transform:translateX(-10px); transition:opacity .5s ease, transform .5s ease;
+}
+.flowchain .fnode.show{opacity:1; transform:translateX(0);}
+.flowchain .fnode .n{font-family:var(--mono); font-size:12px; color:#fff; background:var(--blue); border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex:none;}
+.flowchain .connector{width:2px; height:18px; background:var(--line); margin-left:27px;}
+
+/* horizontal transformation strip */
+.transform-strip{display:flex; align-items:center; gap:12px; margin:20px 0; flex-wrap:wrap;}
+.transform-strip .box{
+  padding:14px 18px; border-radius:8px; font-weight:600; font-size:14.5px;
+  border:1px solid var(--line);
+}
+.transform-strip .arrow{color:var(--ink-faint); font-size:20px;}
+.b-data{background:var(--coral-soft); color:#8C3623; border-color:#F0C2B6;}
+.b-info{background:var(--amber-soft); color:#7A5410; border-color:#ECD9AE;}
+.b-under{background:var(--sage-soft); color:#255A3B; border-color:#BEE0CC;}
+.b-decision{background:var(--blue-soft); color:#1E3F73; border-color:#C4D6EE;}
+
+/* quadrant (4 types of analytics) */
+.quad{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0;}
+.qcard{
+  border:1px solid var(--line); border-radius:var(--radius); padding:18px; cursor:pointer;
+  background:var(--paper-raise); transition:box-shadow .2s, transform .2s; position:relative;
+}
+.qcard:hover{box-shadow:0 4px 16px rgba(22,32,43,.08); transform:translateY(-2px);}
+.qcard .qq{font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin-bottom:4px;}
+.qcard h4{font-size:17px; margin-bottom:6px;}
+.qcard .ans{
+  max-height:0; overflow:hidden; transition:max-height .35s ease; font-size:13.5px; color:var(--ink-soft);
+}
+.qcard.open .ans{max-height:120px; margin-top:8px;}
+.qcard .hint{font-size:12px; color:var(--ink-faint); margin-top:6px;}
+.q1{border-top:3px solid var(--coral);}
+.q2{border-top:3px solid var(--amber);}
+.q3{border-top:3px solid var(--blue);}
+.q4{border-top:3px solid var(--sage);}
+
+/* formula box */
+.formula{
+  font-family:var(--mono); background:var(--violet-soft); border:1px solid #D9CBEA; color:#4B3670;
+  border-radius:8px; padding:16px 20px; font-size:15px; text-align:center; margin:18px 0;
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center;
+}
+.formula span.op{color:#8A76AA; font-weight:600;}
+
+/* two column compare */
+.compare{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0;}
+.compare .col{border:1px solid var(--line); border-radius:var(--radius); padding:18px; background:var(--paper-raise);}
+.compare .col h4{font-size:15px; margin-bottom:10px;}
+.compare .col.analyst{border-top:3px solid var(--blue);}
+.compare .col.scientist{border-top:3px solid var(--violet);}
+.compare ul{margin:0; padding-left:18px;}
+.compare li{font-size:14px; color:var(--ink-soft); margin-bottom:5px;}
+
+/* quiz classifier */
+.quizlist{display:flex; flex-direction:column; gap:10px; margin:18px 0;}
+.quizrow{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  border:1px solid var(--line); border-radius:8px; padding:10px 14px; background:var(--paper-raise);
+}
+.quizrow .term{font-family:var(--mono); font-weight:600; font-size:14.5px; min-width:150px;}
+.quizrow .opts{display:flex; gap:6px; flex-wrap:wrap;}
+.quizrow button{
+  font-family:var(--sans); font-size:12.5px; padding:6px 11px; border-radius:999px; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink-soft); cursor:pointer;
+}
+.quizrow button.correct{background:var(--sage); color:#fff; border-color:var(--sage);}
+.quizrow button.wrong{background:var(--coral); color:#fff; border-color:var(--coral);}
+.quiz-score{font-family:var(--mono); font-size:13px; color:var(--ink-faint); margin-top:6px;}
+
+/* three-card row */
+.rowcards{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:18px 0;}
+.rowcards .rc{border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:var(--paper-raise);}
+.rowcards .rc h4{font-size:15px;}
+.rowcards .rc p{font-size:13.5px; margin-bottom:6px;}
+.rowcards .rc.structured{border-top:3px solid var(--sage);}
+.rowcards .rc.semi{border-top:3px solid var(--amber);}
+.rowcards .rc.unstruct{border-top:3px solid var(--coral);}
+.mini-table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px; margin-top:8px;}
+.mini-table td,.mini-table th{border:1px solid var(--line); padding:4px 6px; text-align:left;}
+.mini-table th{background:var(--paper-alt);}
+
+/* full workflow vertical (10 steps) */
+.workflow{display:flex; flex-direction:column; margin:24px 0;}
+.wstep{
+  display:grid; grid-template-columns:36px 1fr; gap:14px; padding:14px 0;
+  opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease;
+  border-bottom:1px dashed var(--line);
+}
+.wstep.show{opacity:1; transform:translateY(0);}
+.wstep:last-child{border-bottom:none;}
+.wstep .wn{
+  width:36px; height:36px; border-radius:50%; background:var(--blue-soft); color:var(--blue);
+  font-family:var(--mono); font-weight:600; display:flex; align-items:center; justify-content:center; font-size:14px;
+}
+.wstep h4{font-size:15.5px; margin-bottom:2px;}
+.wstep p{font-size:13.5px; margin:0;}
+.wstep .tag{font-family:var(--mono); font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em;}
+
+.callout{
+  border:1px solid #C4D6EE; background:var(--blue-soft); border-radius:var(--radius); padding:16px 20px; margin:20px 0;
+  font-size:14.5px; color:#1E3F73;
+}
+.callout b{display:block; font-family:var(--mono); font-size:12px; text-transform:none; margin-bottom:6px; color:var(--blue);}
+
+/* dataset interactive table */
+.dataset-wrap{overflow-x:auto; margin:18px 0;}
+table.dataset{border-collapse:collapse; width:100%; font-family:var(--mono); font-size:13px;}
+table.dataset th, table.dataset td{border:1px solid var(--line); padding:8px 10px; text-align:left; white-space:nowrap;}
+table.dataset th{background:var(--paper-alt); cursor:pointer;}
+table.dataset th.col-hot{background:var(--blue); color:#fff;}
+table.dataset tbody tr:hover{background:var(--amber-soft); cursor:pointer;}
+table.dataset tbody tr.row-hot{background:var(--sage-soft);}
+.hint-small{font-size:12.5px; color:var(--ink-faint); margin-top:6px;}
+
+/* glossary flip cards */
+.glossary{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin:18px 0;}
+.gcard{
+  perspective:800px; height:92px; cursor:pointer;
+}
+.gcard .inner{position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d;}
+.gcard.flipped .inner{transform:rotateY(180deg);}
+.gface{
+  position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; text-align:center; padding:8px; font-size:13px;
+}
+.gfront{background:var(--paper-raise); font-weight:600; font-family:var(--mono);}
+.gback{background:var(--violet-soft); color:#4B3670; transform:rotateY(180deg); font-size:12px;}
+
+/* tool cards / accordion */
+.toolstep{border:1px solid var(--line); border-radius:var(--radius); margin:12px 0; background:var(--paper-raise); overflow:hidden;}
+.toolstep summary{
+  cursor:pointer; padding:16px 20px; font-family:var(--serif); font-weight:600; font-size:16.5px;
+  list-style:none; display:flex; align-items:center; gap:12px;
+}
+.toolstep summary::-webkit-details-marker{display:none;}
+.toolstep summary .tico{width:30px; height:30px; border-radius:8px; background:var(--blue-soft); color:var(--blue); display:flex; align-items:center; justify-content:center; font-size:15px; flex:none;}
+.toolstep .tbody{padding:0 20px 18px 62px;}
+.toolstep .tbody ol{margin:8px 0; padding-left:18px;}
+.toolstep .tbody li{font-size:14px; color:var(--ink-soft); margin-bottom:4px;}
+.verify-box{font-family:var(--mono); background:var(--ink); color:#DDEAD3; padding:10px 14px; border-radius:6px; font-size:13px; margin-top:8px;}
+.verify-box .prompt{color:#7FB88F;}
+
+/* folder tree */
+.foldertree{font-family:var(--mono); font-size:13.5px; background:var(--paper-raise); border:1px solid var(--line); border-radius:var(--radius); padding:16px 20px; margin:18px 0; color:var(--ink-soft); line-height:1.7;}
+.foldertree .folder{color:var(--blue); font-weight:600;}
+.foldertree .file{color:var(--sage);}
+
+/* code block */
+.codeblock{
+  background:var(--ink); color:#E7E8F5; border-radius:var(--radius); padding:18px 20px; font-family:var(--mono);
+  font-size:13.5px; overflow-x:auto; margin:16px 0; line-height:1.7;
+}
+.codeblock .c1{color:#7FB88F;}
+.codeblock .c2{color:#E1A33E;}
+.codeblock .c3{color:#7FA8DB;}
+.codeblock .cm{color:#7A8894;}
+.line-explain{display:flex; flex-direction:column; gap:8px; margin:16px 0;}
+.line-explain .le{display:grid; grid-template-columns:200px 1fr; gap:12px; align-items:start; border-bottom:1px dashed var(--line); padding-bottom:8px;}
+.le code{background:var(--paper-alt); padding:2px 6px; border-radius:4px; font-size:13px;}
+.le p{margin:0; font-size:13.5px;}
+
+/* simulator */
+.simulator{border:1px solid var(--line); border-radius:var(--radius); background:var(--paper-raise); padding:20px 22px; margin:20px 0;}
+.simulator label{font-size:13px; color:var(--ink-faint); display:block; margin-bottom:6px;}
+.simulator input[type=text]{
+  width:100%; font-family:var(--mono); font-size:14.5px; padding:10px 12px; border-radius:6px; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink);
+}
+.simstats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:16px;}
+.simstats .s{background:var(--blue-soft); border-radius:8px; padding:12px; text-align:center;}
+.simstats .s .v{font-family:var(--mono); font-size:20px; font-weight:600; color:var(--blue);}
+.simstats .s .l{font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
+
+/* mistakes */
+.mistakes{display:flex; flex-direction:column; gap:10px; margin:18px 0;}
+.mistake{display:flex; gap:12px; border:1px solid #F0C2B6; background:var(--coral-soft); border-radius:8px; padding:12px 16px; align-items:flex-start;}
+.mistake .mx{font-family:var(--mono); font-weight:700; color:var(--coral); font-size:13px; flex:none;}
+.mistake p{margin:0; font-size:14px; color:#7A3626;}
+
+/* mindset pairs */
+.mindset-pair{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0; align-items:stretch;}
+.mindset-pair .mp{border-radius:var(--radius); padding:16px 18px; border:1px solid var(--line);}
+.mindset-pair .beginner{background:var(--paper-alt);}
+.mindset-pair .pro{background:var(--sage-soft); border-color:#BEE0CC;}
+.mindset-pair .lbl{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-faint); margin-bottom:6px;}
+.mindset-pair .pro .lbl{color:var(--sage);}
+.mindset-pair q{font-style:italic; font-size:14.5px; color:var(--ink);}
+
+/* checklist completion */
+.checklist{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:20px 0;}
+.checkitem{display:flex; align-items:center; gap:10px; font-size:14px; padding:8px 10px; border-radius:6px; cursor:pointer; border:1px solid transparent;}
+.checkitem:hover{background:var(--paper-alt);}
+.checkitem .box{width:18px; height:18px; border:2px solid var(--line); border-radius:4px; flex:none; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff;}
+.checkitem.done .box{background:var(--sage); border-color:var(--sage);}
+.checkitem.done span.label{color:var(--ink-faint); text-decoration:line-through;}
+.progress-summary{margin-top:14px; font-family:var(--mono); font-size:13px; color:var(--ink-faint);}
+.progress-track{height:8px; background:var(--paper-alt); border-radius:999px; overflow:hidden; margin-top:6px;}
+.progress-fill{height:100%; background:var(--sage); width:0%; transition:width .4s ease;}
+
+.kb{background:var(--amber-soft); border:1px solid #ECD9AE; border-radius:var(--radius); padding:16px 20px; margin:20px 0;}
+.kb .label{font-family:var(--mono); font-size:12px; color:#7A5410; margin-bottom:8px;}
+.kb ol{margin:0; padding-left:20px;}
+.kb li{font-size:14px; color:#7A5410; margin-bottom:6px;}
+
+/* type-and-reveal answer cards */
+.qa-list{display:flex; flex-direction:column; gap:12px; margin:16px 0;}
+.qa-card{border:1px solid var(--line); border-radius:var(--radius); background:var(--paper-raise); padding:16px 18px;}
+.qa-card .qa-q{font-size:14.5px; font-weight:600; color:var(--ink); margin-bottom:10px; display:flex; gap:8px;}
+.qa-card .qa-q .qn{font-family:var(--mono); color:var(--blue); flex:none;}
+.qa-card textarea{
+  width:100%; min-height:64px; font-family:var(--sans); font-size:14px; padding:10px 12px;
+  border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); resize:vertical;
+}
+.qa-card .qa-actions{display:flex; align-items:center; gap:10px; margin-top:8px;}
+.qa-card .qa-toggle{
+  font-family:var(--sans); font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px;
+  border:1px solid var(--blue); background:var(--blue-soft); color:var(--blue); cursor:pointer;
+}
+.qa-card .qa-toggle.shown{background:var(--blue); color:#fff;}
+.qa-card .qa-status{font-family:var(--mono); font-size:11.5px; color:var(--ink-faint);}
+.qa-card .qa-model{
+  max-height:0; overflow:hidden; transition:max-height .35s ease; font-size:13.5px; color:var(--ink-soft);
+  background:var(--sage-soft); border-radius:8px; margin-top:0;
+}
+.qa-card .qa-model.open{max-height:200px; margin-top:10px; padding:10px 14px;}
+.qa-card .qa-model .lbl{font-family:var(--mono); font-size:11px; color:var(--sage); display:block; margin-bottom:4px;}
+
+/* code pad (Part B) */
+.codepad{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin:18px 0; background:var(--ink);}
+.codepad-head{display:flex; align-items:center; gap:6px; padding:10px 14px; background:#0A1B30;}
+.codepad-dot{width:9px; height:9px; border-radius:50%; background:#3A4E68;}
+.codepad-title{font-family:var(--mono); font-size:12px; color:#8A9AB3; margin-left:8px;}
+.codepad-editor{
+  width:100%; min-height:150px; background:var(--ink); color:#E7E8F5; font-family:var(--mono); font-size:14px;
+  border:none; padding:16px; resize:vertical; line-height:1.7; outline:none;
+}
+.codepad-editor::placeholder{color:#5C6E88;}
+.codepad-foot{display:flex; align-items:center; gap:10px; padding:12px 14px; background:#0A1B30; flex-wrap:wrap;}
+.codepad .qa-model{margin:0 14px 14px; background:var(--sage-soft);}
+.codepad .qa-model.open{padding:10px 14px;}
+
+/* glass hint button (sits on the dark codepad footer) */
+.codepad-foot .qa-toggle{
+  font-family:var(--sans); font-size:12.5px; font-weight:600; padding:8px 16px; border-radius:999px;
+  cursor:pointer; color:#CFEFDD; letter-spacing:.01em;
+  background:linear-gradient(135deg, rgba(44,140,116,.30), rgba(255,255,255,.05));
+  border:1px solid rgba(190,224,204,.35);
+  backdrop-filter:blur(10px) saturate(160%); -webkit-backdrop-filter:blur(10px) saturate(160%);
+  box-shadow:0 4px 14px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
+  transition:background .25s ease, transform .15s ease, box-shadow .25s ease;
+}
+.codepad-foot .qa-toggle:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.1);}
+.codepad-foot .qa-toggle:disabled{opacity:.5; cursor:default; transform:none;}
+.codepad-foot .qa-toggle.shown{background:linear-gradient(135deg, rgba(44,140,116,.55), rgba(99,199,154,.15)); color:#fff;}
+.codepad-foot .qa-status{font-family:var(--mono); font-size:11.5px; color:#8A9AB3;}
+
+/* glass hint ladder — frosted cards over the dark codepad */
+.hint-ladder{display:flex; flex-direction:column; gap:0; padding:0 14px;}
+.hint-step{
+  position:relative; overflow:hidden; border-radius:10px; padding:13px 15px; margin:0 0 14px;
+  font-size:13.5px; line-height:1.55; color:#DCEFE6;
+  background:linear-gradient(150deg, rgba(44,140,116,.22), rgba(255,255,255,.04) 60%);
+  border:1px solid rgba(190,224,204,.22);
+  backdrop-filter:blur(14px) saturate(160%); -webkit-backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:0 8px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.07);
+  opacity:0; transform:translateY(8px); animation:hintIn .4s ease forwards;
+}
+.hint-step::before{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background:radial-gradient(220px 80px at 15% 0%, rgba(255,255,255,.12), transparent 65%);
+}
+.hint-step .lbl{font-family:var(--mono); font-size:11px; color:#8FE0BC; display:flex; align-items:center; gap:7px; margin-bottom:7px; text-transform:uppercase; letter-spacing:.04em;}
+.hint-step .lbl .badge{
+  background:linear-gradient(135deg,#2C8C74,#63C79A); color:#06251A; font-weight:700;
+  border-radius:50%; width:17px; height:17px; display:flex; align-items:center; justify-content:center;
+  font-size:10px; flex:none; box-shadow:0 0 0 3px rgba(99,199,154,.15);
+}
+.hint-step p{margin:0; color:#DCEFE6; max-width:none;}
+.hint-step pre{
+  margin:9px 0 0; font-family:var(--mono); font-size:12.5px; border-radius:7px; padding:10px 12px;
+  overflow-x:auto; color:#CFEFDD; background:rgba(255,255,255,.06); border:1px solid rgba(190,224,204,.2);
+  backdrop-filter:blur(6px);
+}
+.hint-step .blank{color:#FFB199; font-weight:700;}
+.hint-step.final{border-color:rgba(192,138,46,.35); background:linear-gradient(150deg, rgba(192,138,46,.20), rgba(255,255,255,.04) 60%);}
+.hint-step.final .lbl{color:var(--amber);}
+.hint-step.final .badge{background:linear-gradient(135deg,#C08A2E,#E3B564); color:#3A2A08; box-shadow:0 0 0 3px rgba(224,181,100,.15);}
+@keyframes hintIn{to{opacity:1; transform:translateY(0);}}
+
+/* MCQ answer cards (Part A) */
+.mcq-opts{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+.mcq-opts button{
+  text-align:left; padding:10px 14px; border-radius:8px; border:1px solid var(--line); background:var(--paper);
+  font-family:var(--sans); font-size:13.5px; color:var(--ink-soft); cursor:pointer; transition:background .2s, color .2s, border-color .2s;
+}
+.mcq-opts button:hover:not(:disabled){border-color:var(--blue);}
+.mcq-opts button.correct{background:var(--sage); color:#fff; border-color:var(--sage);}
+.mcq-opts button.wrong{background:var(--coral); color:#fff; border-color:var(--coral);}
+.mcq-opts button:disabled{cursor:default;}
+.mcq-opts button:disabled.correct{color:#fff; opacity:1;} .mcq-opts button:disabled.wrong{color:#fff; opacity:1;}
+.mcq-explain{
+  max-height:0; overflow:hidden; transition:max-height .35s ease; font-size:13px; color:var(--ink-soft);
+  background:var(--blue-soft); border-radius:8px; margin-top:0;
+}
+.mcq-explain.open{max-height:120px; margin-top:10px; padding:10px 14px;}
+
+footer{padding:40px; text-align:center; color:var(--ink-faint); font-size:13px; border-top:1px solid var(--line);}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{position:static; height:auto; border-right:none; border-bottom:1px solid var(--line);}
+  main{padding:0 20px 80px;}
+  .quad,.compare,.rowcards,.mindset-pair,.checklist,.simstats{grid-template-columns:1fr;}
+}
+
+/* ===================== MODULE 2 ADDITIONS ===================== */
+.excel-green{--xl:#1D6F42;}
+.hero .kicker{color:#1D6F42;}
+.pane-sheet{position:absolute; top:10px; right:250px; width:190px; transform:rotate(-4deg); animation-delay:1.4s; --r:-4deg;}
+.pane-sheet .xg{display:grid; grid-template-columns:22px 1fr 1fr 1fr; font-family:var(--mono); font-size:10px; color:var(--ink-soft);}
+.pane-sheet .xg span{border:1px solid rgba(21,51,92,.14); padding:2px 4px; background:rgba(255,255,255,.35);}
+.pane-sheet .xg span.h{background:rgba(29,111,66,.14); color:#1D6F42; font-weight:600; text-align:center;}
+.pane-sheet .xg span.sel{background:rgba(29,111,66,.25); outline:2px solid #1D6F42;}
+.pane-fx{position:absolute; top:200px; right:60px; width:220px; transform:rotate(3deg); animation-delay:.6s; --r:3deg;
+  background:linear-gradient(155deg, rgba(15,37,64,.72), rgba(15,37,64,.42)); border-color:rgba(255,255,255,.25);}
+.pane-fx .gp-lbl{color:#B9C6DA;} .pane-fx .gp-lbl .dot{background:var(--amber);}
+.pane-fx .cl{font-family:var(--mono); font-size:11px; color:#CFE0F4; margin:4px 0;}
+.pane-fx .cl b{color:#8FE0BC; font-weight:600;} .pane-fx .cl span{color:#F2B98A;}
+.pane-pivot{position:absolute; top:130px; right:280px; width:150px; transform:rotate(2deg); animation-delay:1.1s; --r:2deg;}
+.pane-pivot .row{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10.5px; padding:3px 0; border-bottom:1px dashed rgba(21,51,92,.12);}
+.pane-pivot .row b{color:#1D6F42;}
+
+/* module tree in hero */
+.modtree{font-family:var(--mono); font-size:13px; color:var(--ink-soft); line-height:1.75; margin:0;}
+.modtree b{color:var(--blue);}
+
+/* learning mode strip */
+.mode-strip{display:inline-flex; gap:8px; align-items:center; font-family:var(--mono); font-size:12.5px; background:var(--sage-soft); border:1px solid #BEE0CC; color:#255A3B; border-radius:999px; padding:6px 14px; margin:6px 0 14px;}
+
+/* generic horizontal chain */
+.hchain{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:16px 0;}
+.hchain .hn{font-family:var(--mono); font-size:13px; padding:8px 12px; border-radius:8px; border:1px solid var(--line); background:var(--paper-raise); backdrop-filter:var(--glass-blur); opacity:0; transform:translateY(6px); transition:opacity .45s, transform .45s;}
+.hchain .hn.show{opacity:1; transform:translateY(0);}
+.hchain .ha{color:var(--ink-faint);}
+.hchain .hn.hl{background:var(--blue); color:#fff; border-color:var(--blue);}
+.hchain .hn.sage{background:var(--sage-soft); border-color:#BEE0CC; color:#255A3B;}
+.hchain .hn.coral{background:var(--coral-soft); border-color:#F0C2B6; color:#8C3623;}
+.hchain .hn.amber{background:var(--amber-soft); border-color:#ECD9AE; color:#7A5410;}
+
+/* ---- spreadsheet simulator ---- */
+.xl{border:1px solid var(--line); border-radius:var(--radius); background:var(--paper-raise); backdrop-filter:var(--glass-blur); overflow:hidden; margin:18px 0; box-shadow:0 10px 28px -10px rgba(15,37,64,.14);}
+.xl-top{display:flex; align-items:center; gap:8px; padding:8px 12px; background:#1D6F42; color:#fff; font-family:var(--mono); font-size:12.5px;}
+.xl-top .file{margin-left:auto; opacity:.85;}
+.xl-fbar{display:grid; grid-template-columns:70px 24px 1fr; align-items:center; border-bottom:1px solid var(--line); background:rgba(255,255,255,.6);}
+.xl-fbar .namebox{font-family:var(--mono); font-size:13px; padding:7px 10px; border-right:1px solid var(--line); color:var(--blue); font-weight:600; text-align:center;}
+.xl-fbar .fx{font-family:var(--serif); font-style:italic; text-align:center; color:var(--ink-faint);}
+.xl-fbar .fval{font-family:var(--mono); font-size:13px; padding:7px 10px; color:var(--ink); min-height:32px;}
+.xl-grid{display:grid; user-select:none; overflow-x:auto;}
+.xl-grid .c{border-right:1px solid var(--line); border-bottom:1px solid var(--line); padding:6px 8px; font-family:var(--mono); font-size:13px; min-height:30px; background:rgba(255,255,255,.45); cursor:cell; white-space:nowrap;}
+.xl-grid .c.h{background:var(--paper-alt); color:var(--ink-faint); text-align:center; font-size:12px; cursor:pointer;}
+.xl-grid .c.h.hot{background:rgba(29,111,66,.18); color:#1D6F42; font-weight:600;}
+.xl-grid .c.sel{background:rgba(29,111,66,.14); outline:2px solid #1D6F42; outline-offset:-2px;}
+.xl-grid .c.rng{background:rgba(29,111,66,.14);}
+.xl-grid .c.f{color:var(--blue);}
+.xl-grid .c.hdr{font-weight:600; color:var(--blue);}
+.xl-tabs{display:flex; gap:2px; padding:6px 10px 0; background:rgba(255,255,255,.55); border-top:1px solid var(--line);}
+.xl-tabs span{font-family:var(--sans); font-size:12.5px; padding:5px 14px; border:1px solid var(--line); border-bottom:none; border-radius:6px 6px 0 0; cursor:pointer; color:var(--ink-faint); background:var(--paper-alt);}
+.xl-tabs span.on{background:#fff; color:#1D6F42; font-weight:600; border-bottom:2px solid #1D6F42;}
+.xl-hint{font-size:13px; padding:10px 14px; background:var(--blue-soft); color:#1E3F73; border-top:1px solid var(--line); min-height:40px;}
+.xl-hint b{font-family:var(--mono); font-size:12px;}
+.pickrow{display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;}
+.pickrow button, .simbtn{font-family:var(--sans); font-size:13px; padding:7px 14px; border-radius:999px; border:1px solid var(--line); background:var(--paper); color:var(--ink-soft); cursor:pointer; transition:background .2s,color .2s;}
+.pickrow button.on, .simbtn.on{background:var(--blue); color:#fff; border-color:var(--blue);}
+.pickrow button.correct{background:var(--sage); color:#fff; border-color:var(--sage);}
+.pickrow button.wrong{background:var(--coral); color:#fff; border-color:var(--coral);}
+.simbtn.primary{background:#1D6F42; color:#fff; border-color:#1D6F42;}
+.simbtn:hover{border-color:var(--blue);}
+.simbtn:disabled{opacity:.5;}
+
+/* editable column simulator */
+.colsim{display:grid; grid-template-columns:200px 1fr; gap:18px; align-items:start;}
+.colsim .cells{display:flex; flex-direction:column; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+.colsim .cells .cr{display:grid; grid-template-columns:38px 1fr; border-bottom:1px solid var(--line);}
+.colsim .cells .cr:last-child{border-bottom:none;}
+.colsim .cells .cr span{font-family:var(--mono); font-size:12px; color:var(--ink-faint); background:var(--paper-alt); display:flex; align-items:center; justify-content:center; border-right:1px solid var(--line);}
+.colsim .cells .cr input{border:none; font-family:var(--mono); font-size:13.5px; padding:7px 10px; background:rgba(255,255,255,.6); color:var(--ink); width:100%; outline:none;}
+.colsim .cells .cr input:focus{background:rgba(29,111,66,.10); box-shadow:inset 0 0 0 2px #1D6F42;}
+.fxlist{display:flex; flex-direction:column; gap:8px;}
+.fxrow{display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; border:1px solid var(--line); border-radius:8px; padding:8px 12px; background:rgba(255,255,255,.55);}
+.fxrow code{font-family:var(--mono); font-size:13px; color:#4B3670;}
+.fxrow .lbl{font-size:11px; color:var(--ink-faint); display:block;}
+.fxrow .res{font-family:var(--mono); font-weight:700; font-size:17px; color:#1D6F42; min-width:64px; text-align:right;}
+.fxrow.pulse .res{animation:pop .4s ease;}
+@keyframes pop{0%{transform:scale(1);}40%{transform:scale(1.25); color:var(--amber);}100%{transform:scale(1);}}
+
+/* SUM animation */
+.sumanim{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:14px 0; font-family:var(--mono);}
+.sumanim .sc{padding:8px 12px; border:1px solid var(--line); border-radius:6px; background:rgba(255,255,255,.55); transition:background .3s, transform .3s;}
+.sumanim .sc.lit{background:var(--amber-soft); border-color:#ECD9AE; transform:translateY(-3px);}
+.sumanim .plus{color:var(--ink-faint);}
+.sumanim .tot{padding:8px 14px; border-radius:6px; background:#1D6F42; color:#fff; font-weight:700;}
+
+/* count demo */
+.countdemo{display:grid; grid-template-columns:180px 1fr; gap:18px; align-items:start;}
+.countdemo .cells .cr{display:grid; grid-template-columns:38px 1fr; border-bottom:1px solid var(--line);}
+.countdemo .cells{border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+.countdemo .cells .cr:last-child{border-bottom:none;}
+.countdemo .cells .cr span{font-family:var(--mono); font-size:12px; color:var(--ink-faint); background:var(--paper-alt); display:flex; align-items:center; justify-content:center; border-right:1px solid var(--line);}
+.countdemo .cells .cr i{font-style:normal; font-family:var(--mono); font-size:13px; padding:6px 10px; min-height:30px; display:block; transition:background .3s;}
+.countdemo .cells .cr i.on{background:rgba(29,111,66,.18); font-weight:600;}
+
+/* IF ladder */
+.ifsim{display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;}
+.ifsim input[type=range]{width:100%; accent-color:#1D6F42;}
+.ifsim .bigval{font-family:var(--serif); font-size:44px; font-weight:600; color:var(--blue); line-height:1;}
+.ifsim .verdict{display:inline-block; margin-top:10px; font-family:var(--mono); font-weight:700; padding:8px 18px; border-radius:999px; font-size:15px; transition:all .3s;}
+.ifsim .verdict.pass{background:var(--sage); color:#fff;} .ifsim .verdict.fail{background:var(--coral); color:#fff;}
+.ladder{display:flex; flex-direction:column; gap:6px;}
+.ladder .lr{display:grid; grid-template-columns:110px 1fr auto; gap:10px; align-items:center; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-family:var(--mono); font-size:13px; background:rgba(255,255,255,.5); transition:all .3s;}
+.ladder .lr.on{background:var(--blue); color:#fff; border-color:var(--blue); transform:translateX(6px);}
+.ladder .lr .rg{color:var(--ink-faint); font-size:12px;} .ladder .lr.on .rg{color:#DCEFE6;}
+
+/* truth table */
+.truth{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0;}
+.tcond{border:1px solid var(--line); border-radius:8px; padding:12px 14px; background:rgba(255,255,255,.55); cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:14px;}
+.tcond .st{font-family:var(--mono); font-size:12px; padding:4px 10px; border-radius:999px; background:var(--coral-soft); color:#8C3623;}
+.tcond.true .st{background:var(--sage-soft); color:#255A3B;}
+.tres{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:10px;}
+.tres .tr{border-radius:8px; padding:14px; text-align:center; border:1px solid var(--line); background:rgba(255,255,255,.5);}
+.tres .tr code{display:block; font-size:12.5px; margin-bottom:6px; color:#4B3670;}
+.tres .tr b{font-family:var(--mono); font-size:18px;}
+.tres .tr.t{background:var(--sage-soft); border-color:#BEE0CC;} .tres .tr.t b{color:var(--sage);}
+.tres .tr.f{background:var(--coral-soft); border-color:#F0C2B6;} .tres .tr.f b{color:var(--coral);}
+
+/* dup / missing tables */
+table.dataset tr.dup{background:var(--coral-soft) !important;}
+table.dataset tr.gone{opacity:.25; text-decoration:line-through; transition:opacity .5s;}
+table.dataset td.miss{background:var(--amber-soft); color:#7A5410; font-style:italic;}
+
+/* trim sim */
+.trimsim{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.trimsim textarea{width:100%; min-height:130px; font-family:var(--mono); font-size:13.5px; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--paper); resize:vertical;}
+.trimsim .out{border:1px solid var(--line); border-radius:8px; padding:10px; background:rgba(255,255,255,.55); font-family:var(--mono); font-size:13.5px; min-height:130px;}
+.trimsim .out .sp{background:var(--coral-soft); color:var(--coral);}
+.trimsim .out .ok{color:#1D6F42;}
+
+/* sort filter */
+table.dataset tr.hidden{display:none;}
+table.dataset tr.top1 td{background:var(--sage-soft);}
+select.xsel{font-family:var(--sans); font-size:13px; padding:7px 10px; border-radius:8px; border:1px solid var(--line); background:var(--paper);}
+
+/* validation demo */
+.valdemo{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.valdemo .vd{border:1px solid var(--line); border-radius:8px; padding:14px; background:rgba(255,255,255,.55);}
+.valdemo .vd h4{font-size:14px;}
+.valdemo input[type=text]{width:100%; font-family:var(--mono); font-size:13.5px; padding:8px 10px; border-radius:6px; border:1px solid var(--line);}
+.valdemo .msg{font-size:12.5px; margin-top:8px; min-height:18px; font-family:var(--mono);}
+.valdemo .msg.bad{color:var(--coral);} .valdemo .msg.good{color:#1D6F42;}
+
+/* lookup sim */
+.lookup{display:grid; grid-template-columns:1fr 60px 1fr; gap:10px; align-items:center;}
+.lookup .arrowbig{text-align:center; font-size:28px; color:var(--ink-faint);}
+.lookup table td.scan{background:var(--amber-soft); transition:background .2s;}
+.lookup table td.found{background:var(--sage-soft); font-weight:700; color:#1D6F42;}
+.lookup-out{margin-top:12px; font-family:var(--mono); font-size:14px; padding:10px 14px; border-radius:8px; background:var(--blue-soft); color:#1E3F73; min-height:40px;}
+
+/* pivot sim */
+.pivotsim{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;}
+.pv-fields{display:flex; flex-direction:column; gap:10px;}
+.pv-fields .fz{border:1px dashed var(--line); border-radius:8px; padding:10px 12px; background:rgba(255,255,255,.5);}
+.pv-fields .fz .lbl{font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:6px;}
+.pvbars{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+.pvbars .pb{display:grid; grid-template-columns:70px 1fr 70px; gap:8px; align-items:center; font-family:var(--mono); font-size:13px;}
+.pvbars .pb .bar{height:18px; border-radius:4px; background:linear-gradient(90deg,#1D6F42,#63C79A); width:0; transition:width .6s ease;}
+.pvbars .pb .v{text-align:right; color:var(--blue); font-weight:600;}
+
+/* dashboard mock */
+.dash{border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:rgba(255,255,255,.5); backdrop-filter:var(--glass-blur); margin:16px 0;}
+.dash .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+.dash .kpi{border-radius:8px; padding:12px; background:var(--blue-soft); border:1px solid #C4D6EE;}
+.dash .kpi .l{font-size:11.5px; color:var(--ink-faint);}
+.dash .kpi .v{font-family:var(--serif); font-size:22px; font-weight:600; color:var(--blue);}
+.dash .charts{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;}
+.dash .ch{border:1px solid var(--line); border-radius:8px; padding:10px; background:rgba(255,255,255,.6); min-height:110px;}
+.dash .ch .l{font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:6px;}
+.dash .bars{display:flex; align-items:flex-end; gap:5px; height:70px;}
+.dash .bars i{flex:1; border-radius:3px 3px 0 0; background:linear-gradient(180deg,#1D6F42,rgba(29,111,66,.3)); height:var(--h);}
+.dash svg{width:100%; height:70px;}
+.dash .list div{font-size:12px; display:flex; justify-content:space-between; border-bottom:1px dashed var(--line); padding:3px 0;}
+.dash .list b{font-family:var(--mono); color:#1D6F42;}
+.dash.busy .charts{grid-template-columns:repeat(6,1fr);}
+.dash.busy .ch{min-height:60px; opacity:.85;}
+
+/* power query */
+.pqfiles{display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;}
+.pqfiles .pf{font-family:var(--mono); font-size:12.5px; padding:8px 12px; border-radius:8px; border:1px solid #BEE0CC; background:var(--sage-soft); color:#255A3B; transition:transform .4s, opacity .4s;}
+.pqfiles .pf.new{background:var(--amber-soft); border-color:#ECD9AE; color:#7A5410;}
+.pqsteps{border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.55); padding:12px 14px;}
+.pqsteps .lbl{font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:6px;}
+.pqsteps .ps{display:flex; gap:10px; align-items:center; font-size:13.5px; padding:6px 8px; border-radius:6px; transition:background .3s;}
+.pqsteps .ps .dot{width:10px; height:10px; border-radius:50%; background:var(--line); flex:none; transition:background .3s;}
+.pqsteps .ps.run{background:var(--amber-soft);} .pqsteps .ps.run .dot{background:var(--amber);}
+.pqsteps .ps.ok .dot{background:var(--sage);}
+.pqlog{font-family:var(--mono); font-size:12.5px; color:#1D6F42; margin-top:8px; min-height:18px;}
+
+/* wide vs long toggle */
+.shape-toggle{display:flex; gap:8px; margin:12px 0;}
+.shapebox{border:1px solid var(--line); border-radius:8px; padding:12px; background:rgba(255,255,255,.55);}
+.shapebox.bad{border-top:3px solid var(--coral);} .shapebox.good{border-top:3px solid var(--sage);}
+table.mini-table td.moving{background:var(--amber-soft);}
+
+/* format sim */
+.fmtsim{display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center;}
+.fmtsim .disp{font-family:var(--serif); font-size:34px; font-weight:600; color:var(--blue); text-align:center; padding:14px; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.6);}
+.fmtsim .under{font-family:var(--mono); font-size:13px; color:var(--ink-faint); text-align:center; margin-top:6px;}
+
+/* project accordions */
+.toolstep .tbody ul{margin:8px 0; padding-left:18px;}
+.insight{border-left:3px solid #1D6F42; background:var(--sage-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; color:#255A3B; margin:12px 0;}
+
+/* formula test check */
+.fx-test{display:flex; flex-direction:column; gap:12px; margin:14px 0;}
+.fx-q{border:1px solid var(--line); border-radius:var(--radius); background:var(--paper-raise); padding:14px 16px;}
+.fx-q .qa-q{font-size:14px; font-weight:600; margin-bottom:8px; display:flex; gap:8px;}
+.fx-q .qa-q .qn{font-family:var(--mono); color:var(--blue);}
+.fx-q input{width:100%; font-family:var(--mono); font-size:14px; padding:9px 12px; border-radius:8px; border:1px solid var(--line); background:var(--ink); color:#E7E8F5;}
+.fx-q .row{display:flex; gap:10px; align-items:center; margin-top:8px; flex-wrap:wrap;}
+.fx-q .fb{font-family:var(--mono); font-size:12.5px;}
+.fx-q .fb.good{color:#1D6F42;} .fx-q .fb.bad{color:var(--coral);}
+
+.stepcards{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin:14px 0;}
+.stepcards .sc{border:1px solid var(--line); border-radius:8px; padding:12px; background:var(--paper-raise); backdrop-filter:var(--glass-blur); font-size:13.5px;}
+.stepcards .sc b{font-family:var(--mono); color:var(--blue); display:block; font-size:12px; margin-bottom:4px;}
+
+@media (max-width:860px){
+  .colsim,.countdemo,.ifsim,.truth,.trimsim,.valdemo,.pivotsim,.fmtsim{grid-template-columns:1fr;}
+  .lookup{grid-template-columns:1fr;} .lookup .arrowbig{transform:rotate(90deg);}
+  .dash .kpis{grid-template-columns:1fr 1fr;} .dash .charts{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="page-glass" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span><span class="orb o4"></span><span class="orb o5"></span><span class="sheen"></span></div>
+<div id="scrollbar"></div>
+
+<header class="hero">
+  <div class="hero-glass" aria-hidden="true">
+    <span class="orb orb1"></span><span class="orb orb2"></span><span class="orb orb3"></span>
+    <div class="dash-composition">
+      <div class="glass-pane pane-sheet">
+        <div class="gp-lbl"><span class="dot"></span>sales_analysis.xlsx</div>
+        <div class="xg"><span class="h"></span><span class="h">A</span><span class="h">B</span><span class="h">C</span>
+          <span class="h">1</span><span>Region</span><span>Sales</span><span>Profit</span>
+          <span class="h">2</span><span>South</span><span class="sel">65000</span><span>9000</span>
+          <span class="h">3</span><span>North</span><span>1200</span><span>300</span></div>
+      </div>
+      <div class="glass-pane pane-chart">
+        <div class="gp-lbl"><span class="dot"></span>Sales by Region</div>
+        <div class="bars"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="glass-pane pane-pivot">
+        <div class="gp-lbl"><span class="dot"></span>PivotTable</div>
+        <div class="row"><span>South</span><b>22000</b></div>
+        <div class="row"><span>North</span><b>15000</b></div>
+        <div class="row"><span>West</span><b>20000</b></div>
+      </div>
+      <div class="glass-pane pane-fx">
+        <div class="gp-lbl"><span class="dot"></span>formula bar</div>
+        <div class="cl"><b>=SUMIF</b>(A:A,<span>"South"</span>,B:B)</div>
+        <div class="cl"><b>=IF</b>(B2>=50,<span>"Pass"</span>,<span>"Fail"</span>)</div>
+        <div class="cl"><b>=XLOOKUP</b>(A2,Cust!A:A,Cust!B:B)</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-inner">
+    <div class="kicker">Data Science &amp; Analytics Course · Module 2</div>
+    <h1>Excel &amp; Spreadsheet Analytics</h1>
+    <p class="goal"><b>Module Goal:</b> Learn Excel as a practical analytics tool and develop the ability to take raw tabular data, clean it, analyze it, summarize it, and present useful business insights.</p>
+    <div class="flowline" id="heroFlow">
+      <span class="chip">Raw Data</span><span class="arrow">→</span>
+      <span class="chip">Clean</span><span class="arrow">→</span>
+      <span class="chip">Analyze</span><span class="arrow">→</span>
+      <span class="chip">Summarize</span><span class="arrow">→</span>
+      <span class="chip">Business Insight</span>
+    </div>
+    <div class="meta-row">
+      <div><b>Mode</b> Theory → Practical orientation → Guided practice → Mini Project → Assessment</div>
+      <div><b>Prerequisites</b> Module 1 — Data &amp; Analytics Foundations</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <h4>Module map</h4>
+    <ul class="tree" id="treeNav">
+      <li><a href="#concept1"><span class="num">1</span><span>Understanding Excel for Analytics</span></a></li>
+      <li><a href="#concept2"><span class="num">2</span><span>Working with Data</span></a></li>
+      <li><a href="#concept3"><span class="num">3</span><span>Essential Excel Formulas</span></a></li>
+      <li><a href="#concept4"><span class="num">4</span><span>Conditional Logic &amp; Data Analysis</span></a></li>
+      <li><a href="#concept5"><span class="num">5</span><span>Data Cleaning</span></a></li>
+      <li><a href="#concept6"><span class="num">6</span><span>Sorting, Filtering &amp; Validation</span></a></li>
+      <li><a href="#concept7"><span class="num">7</span><span>Lookup &amp; Data Combination</span></a></li>
+      <li><a href="#concept8"><span class="num">8</span><span>Pivot Tables &amp; Pivot Charts</span></a></li>
+      <li><a href="#concept9"><span class="num">9</span><span>Dashboard Thinking</span></a></li>
+      <li><a href="#concept10"><span class="num">10</span><span>Power Query Fundamentals</span></a></li>
+      <li><a href="#miniproject"><span class="num">★</span><span>Mini Project</span></a></li>
+      <li><a href="#mistakes"><span class="num">❌</span><span>Beginner Mistakes</span></a></li>
+      <li><a href="#mindset"><span class="num">✦</span><span>Professional Mindset</span></a></li>
+      <li><a href="#assessment"><span class="num">📝</span><span>Module 2 Assessment</span></a></li>
+      <li><a href="#completion"><span class="num">✓</span><span>Completion</span></a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+  <!-- ================= CONCEPT 1 ================= -->
+  <section id="concept1">
+    <div class="section-tag">Concept 1</div>
+    <h2 class="section-title">Understanding Excel for Analytics</h2>
+    <p class="section-sub">Step 1 — Why Excel Matters in Data Analytics</p>
+
+    <div class="objectives">
+      <div class="label">🎯 Learning objectives — by the end of this step, you'll understand:</div>
+      <ul>
+        <li>why Excel is still useful for analysts</li>
+        <li>what Excel can and cannot do</li>
+        <li>how Excel fits into the Data Analytics workflow</li>
+        <li>why you should learn Excel before depending completely on programming</li>
+      </ul>
+    </div>
+    <div class="mode-strip">📖 Today's learning mode: Theory + practical orientation</div>
+
+    <h3 class="step-h">1. What Is Excel?</h3>
+    <p>Excel is a spreadsheet application used to:</p>
+    <div class="icongrid">
+      <div class="item"><span class="ic">🗃️</span>store data</div>
+      <div class="item"><span class="ic">🧹</span>organize data</div>
+      <div class="item"><span class="ic">🧮</span>calculate values</div>
+      <div class="item"><span class="ic">🔍</span>analyze data</div>
+      <div class="item"><span class="ic">📊</span>create charts</div>
+      <div class="item"><span class="ic">📄</span>create reports</div>
+      <div class="item"><span class="ic">📈</span>build dashboards</div>
+    </div>
+    <div class="card">
+      <h4>A simple Excel dataset can look like this</h4>
+      <div class="dataset-wrap">
+        <table class="dataset">
+          <thead><tr><th>Customer_ID</th><th>Product</th><th>Region</th><th>Sales</th><th>Profit</th></tr></thead>
+          <tbody>
+            <tr><td>C001</td><td>Laptop</td><td>South</td><td>65000</td><td>9000</td></tr>
+            <tr><td>C002</td><td>Mouse</td><td>North</td><td>1200</td><td>300</td></tr>
+            <tr><td>C003</td><td>Laptop</td><td>West</td><td>70000</td><td>11000</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint-small">This is already a small data-analysis environment.</p>
+    </div>
+
+    <h3 class="step-h">2. Where Excel Fits</h3>
+    <p>A professional data workflow can use several tools:</p>
+    <div class="flowchain">
+      <div class="fnode"><span class="n">1</span>Excel</div><div class="connector"></div>
+      <div class="fnode"><span class="n">2</span>Data Cleaning</div><div class="connector"></div>
+      <div class="fnode"><span class="n">3</span>SQL</div><div class="connector"></div>
+      <div class="fnode"><span class="n">4</span>Python</div><div class="connector"></div>
+      <div class="fnode"><span class="n">5</span>Power BI</div><div class="connector"></div>
+      <div class="fnode"><span class="n">6</span>Business Decision</div>
+    </div>
+    <p>You will eventually learn all of these.</p>
+    <div class="callout"><b>The important point</b>A professional doesn't use Python just because Python is more advanced. For a small analysis, Excel may be faster.</div>
+
+    <h3 class="step-h">3. When Excel Is Useful</h3>
+    <p>Excel is especially useful for:</p>
+    <div class="icongrid">
+      <div class="item"><span class="ic">📦</span>small &amp; medium datasets</div>
+      <div class="item"><span class="ic">⚡</span>quick calculations</div>
+      <div class="item"><span class="ic">👀</span>manual inspection</div>
+      <div class="item"><span class="ic">🏢</span>business reports</div>
+      <div class="item"><span class="ic">📝</span>quick summaries</div>
+      <div class="item"><span class="ic">❓</span>ad-hoc analysis</div>
+      <div class="item"><span class="ic">🤝</span>sharing results with non-technical teams</div>
+    </div>
+
+    <h3 class="step-h">4. Professional Mindset</h3>
+    <div class="mindset-pair">
+      <div class="mp beginner"><div class="lbl">Beginner</div><q>Excel is only for making tables.</q></div>
+      <div class="mp pro"><div class="lbl">Professional</div><q>Excel is one of the tools available for solving a data problem.</q></div>
+    </div>
+
+    <div class="kb"><div class="label">📌 Key takeaways</div>
+      <ol><li>Excel is a practical analytics tool.</li><li>It is useful for quick exploration and business reporting.</li><li>Tool choice should depend on the problem.</li><li>Excel skills remain valuable for analytics work.</li></ol>
+    </div>
+
+    <h3 class="step-h">🧠 Knowledge check</h3>
+    <div class="qa-list" id="kc1"></div>
+
+    <!-- STEP 2 -->
+    <h3 class="step-h">Step 2 — Excel Interface and Data Structure</h3>
+    <div class="objectives">
+      <div class="label">🎯 Learning objectives — you'll understand:</div>
+      <ul><li>workbook</li><li>worksheet</li><li>rows</li><li>columns</li><li>cells</li><li>ranges</li><li>formulas</li><li>formula bar</li></ul>
+    </div>
+
+    <div class="stepcards">
+      <div class="sc"><b>1. Workbook</b>An Excel file is called a workbook.<br><code>sales_analysis.xlsx</code></div>
+      <div class="sc"><b>2. Worksheet</b>A workbook can contain multiple worksheets.<br><code>Sheet1 → Sales</code><br><code>Sheet2 → Customers</code><br><code>Sheet3 → Products</code></div>
+      <div class="sc"><b>3. Cell</b>A cell is the intersection of a row and column.<br><code>A1</code> <code>B5</code> <code>D12</code></div>
+      <div class="sc"><b>4. Range</b>Multiple cells together form a range.<br><code>A1:A10</code> means cells from A1 through A10.</div>
+      <div class="sc"><b>5. Formula Bar</b>When you click a cell containing a formula, Excel displays that formula in the formula bar. This becomes important when you start auditing calculations.</div>
+    </div>
+
+    <div class="card">
+      <h4>🖱️ Simulation — explore a live mini-Excel</h4>
+      <p style="font-size:13.5px">Click any cell to see its address in the Name Box. Click a column letter or row number to select it. Click-and-drag across cells to make a range. Click cell <code>B5</code> to see a formula in the formula bar. Switch sheet tabs at the bottom.</p>
+      <div class="xl" id="xl1">
+        <div class="xl-top">📗 Microsoft Excel <span class="file">sales_analysis.xlsx — the workbook</span></div>
+        <div class="xl-fbar"><div class="namebox" id="xlName">A1</div><div class="fx">fx</div><div class="fval" id="xlFval"></div></div>
+        <div class="xl-grid" id="xlGrid"></div>
+        <div class="xl-tabs" id="xlTabs"><span class="on">Sales</span><span>Customers</span><span>Products</span></div>
+        <div class="xl-hint" id="xlHint">👆 Try clicking around the sheet.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>🧪 Practice</h4>
+      <p>Open Excel and manually create:</p>
+      <div class="dataset-wrap"><table class="dataset">
+        <thead><tr><th>Student_ID</th><th>Name</th><th>Marks</th></tr></thead>
+        <tbody><tr><td>101</td><td>Arun</td><td>85</td></tr><tr><td>102</td><td>Ravi</td><td>78</td></tr><tr><td>103</td><td>Priya</td><td>92</td></tr></tbody>
+      </table></div>
+      <p style="margin-top:10px">Identify: the workbook · the worksheet · a cell · a row · a column · a range.</p>
+      <p style="font-size:13.5px">Test yourself here first — click the button that matches each item in the mini-sheet above:</p>
+      <div class="quizlist" id="xlQuiz"></div>
+      <div class="quiz-score" id="xlQuizScore">0 / 6 identified</div>
+    </div>
+  </section>
+
+  <!-- ================= CONCEPT 2 ================= -->
+  <section id="concept2">
+    <div class="section-tag">Concept 2</div>
+    <h2 class="section-title">Working with Data</h2>
+    <p class="section-sub">Step 1 — Create a Proper Dataset</p>
+
+    <div class="objectives"><div class="label">🎯 Learning objectives — you will learn:</div>
+      <ul><li>how to structure tabular data</li><li>what makes a dataset analysis-friendly</li><li>why consistent columns matter</li></ul></div>
+
+    <h3 class="step-h">1. Good Dataset Structure</h3>
+    <div class="hchain"><span class="hn sage">One row = one record</span><span class="ha">·</span><span class="hn sage">One column = one variable</span></div>
+    <div class="dataset-wrap"><table class="dataset" id="rowColTable">
+      <thead><tr><th>Customer_ID</th><th>Product</th><th>Quantity</th><th>Sales</th></tr></thead>
+      <tbody><tr><td>C001</td><td>Laptop</td><td>2</td><td>130000</td></tr><tr><td>C002</td><td>Mouse</td><td>3</td><td>3600</td></tr></tbody>
+    </table></div>
+    <p class="hint-small" id="rowColHint">Hover a row or a column heading to see what it represents.</p>
+
+    <h3 class="step-h">2. Bad Structure</h3>
+    <p>Avoid this layout — it might look fine for a report, but it is not always the best structure for analytics:</p>
+    <div class="shape-toggle">
+      <button class="simbtn on" id="btnWide">Show report layout (wide)</button>
+      <button class="simbtn" id="btnLong">Reshape to analytical layout (long)</button>
+    </div>
+    <div id="shapeWide" class="shapebox bad">
+      <table class="mini-table"><thead><tr><th></th><th>January</th><th>February</th><th>March</th></tr></thead>
+      <tbody><tr><th>Sales</th><td>10000</td><td>15000</td><td>12000</td></tr><tr><th>Profit</th><td>2000</td><td>3000</td><td>2400</td></tr></tbody></table>
+      <p class="hint-small">Months are spread across columns — the same variable (Month) lives in three headers.</p>
+    </div>
+    <div id="shapeLong" class="shapebox good" style="display:none">
+      <table class="mini-table"><thead><tr><th>Month</th><th>Metric</th><th>Value</th></tr></thead>
+      <tbody id="longBody"></tbody></table>
+      <p class="hint-small">A cleaner analytical structure: one row per (Month, Metric) observation. Later, this understanding will help you with SQL, pandas, and Power BI.</p>
+    </div>
+
+    <h3 class="step-h">3. Golden Rule</h3>
+    <div class="callout"><b>Golden rule</b>Keep raw data separate from presentation. Don't mix everything into one chaotic sheet.</div>
+    <div class="foldertree">
+      <span class="folder">📗 sales_analysis.xlsx</span><br>
+      &nbsp;&nbsp;├── <span class="file">📄 Raw_Data</span> &nbsp;<span style="color:var(--ink-faint)">— untouched original data</span><br>
+      &nbsp;&nbsp;├── <span class="file">📄 Analysis</span> &nbsp;<span style="color:var(--ink-faint)">— formulas, calculations, pivots</span><br>
+      &nbsp;&nbsp;└── <span class="file">📄 Dashboard</span> &nbsp;<span style="color:var(--ink-faint)">— visual summary for the reader</span>
+    </div>
+
+    <h3 class="step-h">Step 2 — Entering and Formatting Data</h3>
+    <div class="objectives"><div class="label">🎯 Learning objectives — you'll learn:</div>
+      <ul><li>numbers vs text</li><li>dates</li><li>percentages</li><li>currency</li><li>formatting without changing the underlying meaning</li></ul></div>
+    <div class="card">
+      <h4>Simulation — formatting changes the display, not the value</h4>
+      <p style="font-size:13.5px">Example: <code>Sales = 25000</code>. Pick a display format and watch the underlying value stay the same.</p>
+      <div class="pickrow" id="fmtPick">
+        <button class="on" data-f="plain">Plain number</button><button data-f="inr">₹ Currency</button><button data-f="comma">Thousands separator</button><button data-f="dec">2 decimals</button><button data-f="pct">Percentage</button>
+      </div>
+      <div class="fmtsim">
+        <div><div class="disp" id="fmtDisp">25000</div><div class="under">What you see in the cell</div></div>
+        <div><div class="disp" style="color:#1D6F42">25000</div><div class="under">Underlying value used in calculations — never changes</div></div>
+      </div>
+    </div>
+    <div class="callout"><b>Professional rule</b>Formatting should improve readability; it should not corrupt the data.</div>
+    <h3 class="step-h">🧠 Knowledge check</h3>
+    <div class="qa-list" id="kc2"></div>
+  </section>
+
+  <!-- ================= CONCEPT 3 ================= -->
+  <section id="concept3">
+    <div class="section-tag">Concept 3</div>
+    <h2 class="section-title">Essential Excel Formulas</h2>
+    <p class="section-sub">Step 1 — SUM, AVERAGE, MIN, MAX, COUNT</p>
+    <div class="objectives"><div class="label">🎯 Learning objective</div><ul><li>By the end of this step, you'll be able to calculate basic statistics using Excel formulas.</li></ul></div>
+
+    <div class="card">
+      <h4>Live formula simulator — edit the cells in A2:A6</h4>
+      <div class="colsim">
+        <div class="cells" id="fxCells"></div>
+        <div class="fxlist" id="fxList"></div>
+      </div>
+    </div>
+
+    <h3 class="step-h">2. What Actually Happens?</h3>
+    <p>For <code>=SUM(A2:A6)</code>, Excel adds each cell in the range one by one — you don't need to manually add everything.</p>
+    <div class="sumanim" id="sumAnim"></div>
+    <button class="simbtn primary" id="sumReplay">▶ Replay the addition</button>
+
+    <div class="card">
+      <h4>🧪 Practice</h4>
+      <p>Create a <b>Sales</b> column with: 1200, 1500, 2100, 1800, 2500. Calculate the total, average, highest, lowest, and number of values.</p>
+      <p class="hint-small">Tip: paste those values into the simulator above to check your answers.</p>
+    </div>
+
+    <h3 class="step-h">Step 2 — COUNT, COUNTA, COUNTIF</h3>
+    <p>These functions look similar but behave differently. Click each formula to highlight the cells it actually counts.</p>
+    <div class="countdemo">
+      <div class="cells" id="countCells"></div>
+      <div class="fxlist" id="countList"></div>
+    </div>
+    <div class="stepcards">
+      <div class="sc"><b>COUNT</b>Counts numeric cells.<br><code>=COUNT(A2:A100)</code></div>
+      <div class="sc"><b>COUNTA</b>Counts non-empty cells.<br><code>=COUNTA(A2:A100)</code></div>
+      <div class="sc"><b>COUNTIF</b>Counts cells satisfying a condition.<br><code>=COUNTIF(B2:B100,"AI&amp;DS")</code><br>Meaning: count how many rows contain AI&amp;DS.</div>
+    </div>
+    <h3 class="step-h">🧠 Knowledge check</h3>
+    <div class="qa-list" id="kc3a"></div>
+
+    <h3 class="step-h">Step 3 — SUMIF, SUMIFS, AVERAGEIF</h3>
+    <p>These become very important in analytics.</p>
+    <div class="card">
+      <h4>SUMIF simulator — pick a region</h4>
+      <div class="colsim" style="grid-template-columns:220px 1fr">
+        <div class="dataset-wrap" style="margin:0"><table class="dataset" id="sumifTable">
+          <thead><tr><th>Region</th><th>Sales</th></tr></thead>
+          <tbody><tr><td>South</td><td>10000</td></tr><tr><td>North</td><td>15000</td></tr><tr><td>South</td><td>12000</td></tr><tr><td>West</td><td>20000</td></tr></tbody></table></div>
+        <div>
+          <div class="pickrow" id="sumifPick"><button class="on" data-r="South">South</button><button data-r="North">North</button><button data-r="West">West</button></div>
+          <div class="fxlist">
+            <div class="fxrow" id="sumifRow"><div><span class="lbl">SUMIF — sum only matching rows</span><code id="sumifCode">=SUMIF(A2:A5,"South",B2:B5)</code></div><div class="res" id="sumifRes">22000</div></div>
+            <div class="fxrow" id="avgifRow"><div><span class="lbl">AVERAGEIF — average of matching rows</span><code id="avgifCode">=AVERAGEIF(A2:A5,"South",B2:B5)</code></div><div class="res" id="avgifRes">11000</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="stepcards">
+      <div class="sc"><b>SUMIF</b>One condition. To calculate South sales:<br><code>=SUMIF(A2:A5,"South",B2:B5)</code></div>
+      <div class="sc"><b>SUMIFS</b>Multiple conditions — e.g. Region = South <i>and</i> Product = Laptop:<br><code>=SUMIFS(C2:C100,A2:A100,"South",B2:B100,"Laptop")</code></div>
+      <div class="sc"><b>AVERAGEIF</b>Average of matching rows:<br><code>=AVERAGEIF(A2:A100,"South",B2:B100)</code></div>
+    </div>
+    <div class="line-explain">
+      <div class="le"><code>=SUMIFS(C2:C100,</code><p>sum_range — the numbers to add up (Sales).</p></div>
+      <div class="le"><code>A2:A100,"South",</code><p>criteria 1 — Region column must equal South.</p></div>
+      <div class="le"><code>B2:B100,"Laptop")</code><p>criteria 2 — Product column must equal Laptop. Both must be true for a row to be added.</p></div>
+    </div>
+    <div class="callout"><b>Professional thinking</b>Don't memorize formulas blindly. Ask: <i>"What question am I trying to answer?"</i> Then choose the appropriate formula.</div>
+  </section>
+
+  <!-- ================= CONCEPT 4 ================= -->
+  <section id="concept4">
+    <div class="section-tag">Concept 4</div>
+    <h2 class="section-title">Conditional Logic &amp; Data Analysis</h2>
+    <p class="section-sub">Step 1 — IF Function</p>
+    <div class="objectives"><div class="label">🎯 Learning objective</div><ul><li>You'll learn how to make Excel apply logic.</li></ul></div>
+    <p>Suppose marks are in <code>B2</code>:</p>
+    <div class="formula">=IF(B2&gt;=50, <span class="op">"Pass"</span>, <span class="op">"Fail"</span>)</div>
+    <div class="card">
+      <h4>Simulation — drag the marks slider</h4>
+      <div class="ifsim">
+        <div>
+          <label style="font-size:13px;color:var(--ink-faint)">B2 (marks)</label>
+          <div class="bigval" id="ifVal">72</div>
+          <input type="range" min="0" max="100" value="72" id="ifRange">
+          <div class="verdict pass" id="ifVerdict">PASS</div>
+          <p class="hint-small">Logic: Marks ≥ 50 → PASS &nbsp;·&nbsp; Marks &lt; 50 → FAIL</p>
+        </div>
+        <div>
+          <p style="font-size:13px;margin-bottom:8px"><b>2. Nested / multiple conditions with IFS</b> — the same slider drives this ladder; the first true row wins.</p>
+          <div class="ladder" id="ifsLadder"></div>
+        </div>
+      </div>
+    </div>
+    <div class="codeblock"><span class="c2">=IFS</span>(
+  B2&gt;=90, <span class="c1">"Excellent"</span>,
+  B2&gt;=75, <span class="c1">"Very Good"</span>,
+  B2&gt;=60, <span class="c1">"Good"</span>,
+  B2&gt;=50, <span class="c1">"Pass"</span>,
+  B2&lt;50,  <span class="c1">"Fail"</span>
+)  <span class="cm">← creates categories based on performance</span></div>
+    <div class="card"><h4>🧪 Practice</h4><p>Create a grade/category column using marks:</p>
+      <div class="hchain"><span class="hn sage">90–100 → Excellent</span><span class="hn sage">75–89 → Very Good</span><span class="hn amber">60–74 → Good</span><span class="hn amber">50–59 → Pass</span><span class="hn coral">Below 50 → Fail</span></div></div>
+
+    <h3 class="step-h">Step 2 — AND, OR and Logical Thinking</h3>
+    <div class="stepcards">
+      <div class="sc"><b>AND</b>Both conditions must be true.<br><code>=AND(B2&gt;=50,C2&gt;=75)</code><br>Meaning: marks are at least 50 AND attendance is at least 75%.</div>
+      <div class="sc"><b>OR</b>At least one condition must be true.<br><code>=OR(B2&gt;=90,C2&gt;=90)</code></div>
+    </div>
+    <div class="card">
+      <h4>Simulation — toggle each condition and watch AND / OR respond</h4>
+      <div class="truth">
+        <div class="tcond true" id="c1"><span>B2 ≥ 50 (marks)</span><span class="st">TRUE</span></div>
+        <div class="tcond" id="c2"><span>C2 ≥ 75 (attendance)</span><span class="st">FALSE</span></div>
+      </div>
+      <div class="tres">
+        <div class="tr f" id="andRes"><code>=AND(B2&gt;=50,C2&gt;=75)</code><b>FALSE</b></div>
+        <div class="tr t" id="orRes"><code>=OR(B2&gt;=50,C2&gt;=75)</code><b>TRUE</b></div>
+      </div>
+    </div>
+    <div class="callout"><b>Professional example</b>You may need to identify students who are passing <i>and</i> have good attendance. This is not just formula knowledge — it is business/problem logic.</div>
+  </section>
+
+  <!-- ================= CONCEPT 5 ================= -->
+  <section id="concept5">
+    <div class="section-tag">Concept 5</div>
+    <h2 class="section-title">Data Cleaning</h2>
+    <p class="section-sub">Step 1 — Why Data Cleaning Is Necessary</p>
+    <div class="objectives"><div class="label">🎯 Learning objectives — you'll understand:</div>
+      <ul><li>why raw data is rarely perfect</li><li>common data-quality problems</li><li>why cleaning must happen before analysis</li></ul></div>
+    <p>Real data may contain:</p>
+    <div class="icongrid">
+      <div class="item"><span class="ic">🕳️</span>Missing values</div><div class="item"><span class="ic">👯</span>Duplicates</div>
+      <div class="item"><span class="ic">✍️</span>Wrong spelling</div><div class="item"><span class="ic">📅</span>Incorrect dates</div>
+      <div class="item"><span class="ic">␣</span>Extra spaces</div><div class="item"><span class="ic">🔤</span>Wrong data types</div>
+      <div class="item"><span class="ic">🚫</span>Impossible values</div>
+    </div>
+    <div class="card"><h4>Example — one category, four spellings</h4>
+      <div class="chipgrid"><span class="datum">AI&amp;DS</span><span class="datum">AI &amp; DS</span><span class="datum">AI-DS</span><span class="datum">AIDS</span></div>
+      <p>These may represent the same category. Excel may treat them as different text values.</p></div>
+    <h3 class="step-h">Professional workflow</h3>
+    <div class="flowchain">
+      <div class="fnode"><span class="n">1</span>Raw Data</div><div class="connector"></div>
+      <div class="fnode"><span class="n">2</span>Inspect</div><div class="connector"></div>
+      <div class="fnode"><span class="n">3</span>Identify Problems</div><div class="connector"></div>
+      <div class="fnode"><span class="n">4</span>Clean</div><div class="connector"></div>
+      <div class="fnode"><span class="n">5</span>Validate</div><div class="connector"></div>
+      <div class="fnode"><span class="n">6</span>Analyze</div>
+    </div>
+
+    <h3 class="step-h">Step 2 — Remove Duplicates</h3>
+    <div class="card">
+      <div class="dataset-wrap"><table class="dataset" id="dupTable">
+        <thead><tr><th>Customer_ID</th><th>Name</th></tr></thead>
+        <tbody><tr><td>C001</td><td>Arun</td></tr><tr><td>C002</td><td>Ravi</td></tr><tr class="dup"><td>C001</td><td>Arun</td></tr></tbody></table></div>
+      <p style="margin:10px 0 6px">The third row is a duplicate.</p>
+      <div class="pickrow"><button class="simbtn primary" id="dupBtn">Data → Remove Duplicates</button><button class="simbtn" id="dupReset">Reset</button></div>
+      <p class="hint-small" id="dupMsg">In Excel, use <b>Data → Remove Duplicates</b>.</p>
+    </div>
+    <div class="callout"><b>Important</b>Do not blindly delete duplicates. First understand: <i>Is this genuinely a duplicate transaction, or are two records legitimately associated with the same customer?</i> This is a professional mindset.</div>
+
+    <h3 class="step-h">Step 3 — Missing Values</h3>
+    <div class="card">
+      <div class="dataset-wrap"><table class="dataset">
+        <thead><tr><th>Student</th><th>Marks</th></tr></thead>
+        <tbody><tr><td>Arun</td><td>85</td></tr><tr><td>Ravi</td><td class="miss">(blank)</td></tr><tr><td>Priya</td><td>92</td></tr></tbody></table></div>
+      <p style="margin-top:10px">Ravi's mark is missing. <b>Do not automatically replace it with zero.</b></p>
+      <p>Possible causes — tap each to think about what it would mean:</p>
+      <div class="quad" id="missQuad">
+        <div class="qcard q1" data-ans="The teacher never typed it in. The real mark exists — you need to find it, not invent it."><div class="qq">Cause 1</div><h4>Not entered</h4><div class="ans"></div><div class="hint">Tap</div></div>
+        <div class="qcard q2" data-ans="Ravi may not have sat the exam yet. A zero would wrongly say he scored nothing."><div class="qq">Cause 2</div><h4>Not available</h4><div class="ans"></div><div class="hint">Tap</div></div>
+        <div class="qcard q3" data-ans="A file error or copy mistake dropped the value. Recover it from the source if possible."><div class="qq">Cause 3</div><h4>Data lost</h4><div class="ans"></div><div class="hint">Tap</div></div>
+        <div class="qcard q4" data-ans="Perhaps Ravi is exempt from this subject. The blank is meaningful — it should stay blank."><div class="qq">Cause 4</div><h4>Not applicable</h4><div class="ans"></div><div class="hint">Tap</div></div>
+      </div>
+      <p>You first investigate the meaning.</p>
+    </div>
+    <div class="callout"><b>Professional rule</b>A missing value is information about what is missing, not automatically a zero.</div>
+
+    <h3 class="step-h">Step 4 — TRIM and Text Cleaning</h3>
+    <p>Extra spaces can cause problems. <code>"South"</code>, <code>" South"</code> and <code>"South "</code> look identical but Excel sees three different values.</p>
+    <div class="formula">=TRIM(A2) <span class="op">→</span> removes unnecessary spaces</div>
+    <div class="card">
+      <h4>🧪 Practice simulator — clean messy regions with TRIM</h4>
+      <p style="font-size:13.5px">The left box holds deliberately messy data (one value per line). Edit it freely — the right side shows <code>=TRIM()</code> applied to each cell and counts the unique regions before and after.</p>
+      <div class="trimsim">
+        <div><label style="font-size:12px;color:var(--ink-faint)">Raw column A (␣ = hidden space)</label><textarea id="trimIn">South
+ South
+South 
+North
+North </textarea></div>
+        <div><label style="font-size:12px;color:var(--ink-faint)">=TRIM(A2) … =TRIM(A6)</label><div class="out" id="trimOut"></div></div>
+      </div>
+      <div class="simstats" id="trimStats" style="grid-template-columns:1fr 1fr"></div>
+    </div>
+  </section>
+
+  <!-- ================= CONCEPT 6 ================= -->
+  <section id="concept6">
+    <div class="section-tag">Concept 6</div>
+    <h2 class="section-title">Sorting, Filtering &amp; Data Validation</h2>
+    <p class="section-sub">Step 1 — Sort Data · Step 2 — Filter Data · Step 3 — Data Validation</p>
+
+    <h3 class="step-h">Step 1 — Sort Data</h3>
+    <p>You can sort: smallest to largest · largest to smallest · A to Z · Z to A. Example: sort marks from highest to lowest — this quickly reveals top performers.</p>
+    <h3 class="step-h">Step 2 — Filter Data</h3>
+    <p>Suppose you want only <code>Department = AI&amp;DS</code>. Use <b>Data → Filter</b>, then select AI&amp;DS.</p>
+    <div class="card">
+      <h4>Simulation — sort and filter a real table</h4>
+      <div class="pickrow">
+        <button class="simbtn" data-sort="desc">Marks: largest → smallest</button>
+        <button class="simbtn" data-sort="asc">Marks: smallest → largest</button>
+        <button class="simbtn" data-sort="az">Name: A → Z</button>
+        <button class="simbtn" data-sort="za">Name: Z → A</button>
+        <select class="xsel" id="deptFilter"><option value="">Filter: all departments</option><option>AI&amp;DS</option><option>CSE</option><option>ECE</option></select>
+      </div>
+      <div class="dataset-wrap"><table class="dataset" id="sfTable">
+        <thead><tr><th>Student_ID</th><th>Name</th><th>Department</th><th>Marks</th></tr></thead><tbody></tbody></table></div>
+      <p class="hint-small" id="sfHint">Showing 6 of 6 rows.</p>
+    </div>
+    <div class="callout"><b>Professional use</b>Filtering helps answer questions like: <i>"Show only customers from Tamil Nadu with purchases above ₹50,000."</i></div>
+
+    <h3 class="step-h">Step 3 — Data Validation</h3>
+    <p>Data validation controls what users can enter. Instead of allowing <code>South</code>, <code>south</code>, <code>SOUTH</code>, <code>Soth</code>, you can create a controlled list: North · South · East · West. This improves data consistency.</p>
+    <div class="card"><h4>Simulation — free typing vs a validated list</h4>
+      <div class="valdemo">
+        <div class="vd"><h4>❌ Without validation</h4><input type="text" id="valFree" placeholder="Type a region, e.g. Soth"><div class="msg" id="valFreeMsg"></div></div>
+        <div class="vd"><h4>✅ With a validation list</h4><select class="xsel" id="valList" style="width:100%"><option value="">— choose a region —</option><option>North</option><option>South</option><option>East</option><option>West</option></select><div class="msg good" id="valListMsg"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONCEPT 7 ================= -->
+  <section id="concept7">
+    <div class="section-tag">Concept 7</div>
+    <h2 class="section-title">Lookup &amp; Data Combination</h2>
+    <p class="section-sub">Step 1 — Why Lookups Matter</p>
+    <p>Imagine two tables. You may need to bring the customer name into the orders table. This is a common analytics task.</p>
+    <div class="card">
+      <h4>Step 2 — XLOOKUP simulation: pick a Customer_ID in the Orders table</h4>
+      <div class="lookup">
+        <div><div class="hint-small" style="margin:0 0 4px">Orders (search key = Customer_ID)</div>
+          <table class="mini-table" id="ordTable"><thead><tr><th>Customer_ID</th><th>Sales</th><th>Name (lookup)</th></tr></thead>
+          <tbody><tr data-k="C001"><td>C001</td><td>5000</td><td></td></tr><tr data-k="C003"><td>C003</td><td>7000</td><td></td></tr><tr data-k="C002"><td>C002</td><td>3500</td><td></td></tr></tbody></table></div>
+        <div class="arrowbig">⇄</div>
+        <div><div class="hint-small" style="margin:0 0 4px">Customers (matching table)</div>
+          <table class="mini-table" id="custTable"><thead><tr><th>Customer_ID</th><th>Name</th></tr></thead>
+          <tbody><tr data-k="C001"><td>C001</td><td>Arun</td></tr><tr data-k="C002"><td>C002</td><td>Ravi</td></tr><tr data-k="C003"><td>C003</td><td>Priya</td></tr></tbody></table></div>
+      </div>
+      <div class="pickrow" id="lkPick"><button data-k="C001">Lookup C001</button><button data-k="C003">Lookup C003</button><button data-k="C002">Lookup C002</button></div>
+      <div class="lookup-out" id="lkOut">Click a button to run =XLOOKUP(A2, Customers!A:A, Customers!B:B)</div>
+    </div>
+    <div class="formula">=XLOOKUP(A2, Customers!A:A, Customers!B:B)</div>
+    <div class="line-explain">
+      <div class="le"><code>A2</code><p>the value to find — the Customer ID in this order row.</p></div>
+      <div class="le"><code>Customers!A:A</code><p>where to search — the ID column on the Customers sheet.</p></div>
+      <div class="le"><code>Customers!B:B</code><p>what to return — the Name column, from the matching row.</p></div>
+    </div>
+    <div class="hchain"><span class="hn">Customer ID</span><span class="ha">→</span><span class="hn">Find matching ID</span><span class="ha">→</span><span class="hn hl">Return customer name</span></div>
+    <div class="callout"><b>Important</b>Don't memorize the formula yet. Understand the logic: <b style="display:inline;font-family:var(--mono)">Search key → matching table → return value</b>.</div>
+
+    <h3 class="step-h">Step 3 — Lookup Thinking</h3>
+    <p>A lookup requires:</p>
+    <div class="hchain"><span class="hn amber">Key</span><span class="ha">↓</span><span class="hn amber">Search</span><span class="ha">↓</span><span class="hn amber">Match</span><span class="ha">↓</span><span class="hn sage">Return</span></div>
+    <p>The same fundamental idea will later appear in:</p>
+    <div class="icongrid">
+      <div class="item"><span class="ic">🗄️</span>SQL JOIN</div><div class="item"><span class="ic">🐼</span>pandas merge</div>
+      <div class="item"><span class="ic">🔗</span>database relationships</div><div class="item"><span class="ic">📊</span>Power BI relationships</div>
+    </div>
+    <p>That makes Excel lookup skills more valuable than they initially appear.</p>
+  </section>
+
+  <!-- ================= CONCEPT 8 ================= -->
+  <section id="concept8">
+    <div class="section-tag">Concept 8</div>
+    <h2 class="section-title">Pivot Tables &amp; Pivot Charts</h2>
+    <p class="section-sub">Step 1 — What Is a Pivot Table?</p>
+    <p>A Pivot Table summarizes a dataset without requiring you to manually calculate every group.</p>
+    <div class="card">
+      <h4>Step 2 — Pivot simulator: Select data → Insert → PivotTable → arrange fields</h4>
+      <div class="pivotsim">
+        <div>
+          <div class="hint-small" style="margin:0 0 4px">Source data</div>
+          <table class="mini-table"><thead><tr><th>Region</th><th>Product</th><th>Sales</th></tr></thead>
+            <tbody><tr><td>South</td><td>Laptop</td><td>10000</td></tr><tr><td>North</td><td>Mouse</td><td>15000</td></tr><tr><td>South</td><td>Mouse</td><td>12000</td></tr><tr><td>West</td><td>Laptop</td><td>20000</td></tr></tbody></table>
+          <div class="pv-fields" style="margin-top:12px">
+            <div class="fz"><div class="lbl">Rows</div><div class="pickrow" id="pvRows" style="margin:0"><button class="on" data-v="Region">Region</button><button data-v="Product">Product</button></div></div>
+            <div class="fz"><div class="lbl">Values → Sales</div><div class="pickrow" id="pvAgg" style="margin:0"><button class="on" data-v="Sum">Sum</button><button data-v="Average">Average</button><button data-v="Count">Count</button></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="hint-small" style="margin:0 0 4px">PivotTable — Excel creates the summary</div>
+          <table class="mini-table"><thead><tr><th id="pvHead">Region</th><th id="pvAggHead">Sum of Sales</th></tr></thead><tbody id="pvBody"></tbody></table>
+          <div class="hint-small" style="margin:12px 0 4px">Step 4 — Pivot Chart (visualizes the Pivot Table)</div>
+          <div class="pvbars" id="pvBars"></div>
+        </div>
+      </div>
+    </div>
+    <p>With <b>Rows: Region</b> and <b>Values: Sales → Sum</b>, the summary is: South → 22000 · North → 15000 · West → 20000.</p>
+    <h3 class="step-h">Step 3 — Why Professionals Use Pivot Tables</h3>
+    <p>Pivot Tables are useful for quickly answering:</p>
+    <div class="icongrid">
+      <div class="item"><span class="ic">🗺️</span>sales by region</div><div class="item"><span class="ic">📦</span>sales by product</div>
+      <div class="item"><span class="ic">👥</span>customers by category</div><div class="item"><span class="ic">📅</span>monthly revenue</div>
+      <div class="item"><span class="ic">🎓</span>average marks by department</div>
+    </div>
+    <h3 class="step-h">Step 4 — Pivot Charts</h3>
+    <div class="hchain"><span class="hn">Pivot Table</span><span class="ha">→</span><span class="hn">Summary</span><span class="ha">→</span><span class="hn hl">Pivot Chart</span></div>
+    <p>A Pivot Chart visualizes the Pivot Table. This makes analysis easier to communicate.</p>
+  </section>
+
+  <!-- ================= CONCEPT 9 ================= -->
+  <section id="concept9">
+    <div class="section-tag">Concept 9</div>
+    <h2 class="section-title">Professional Excel Dashboard Thinking</h2>
+    <p class="section-sub">Step 1 — What Is a Dashboard?</p>
+    <p>A dashboard is a visual summary designed to help someone quickly understand important information. A dashboard might contain:</p>
+    <div class="pickrow"><button class="simbtn on" id="dashGood">Focused dashboard</button><button class="simbtn" id="dashBusy">"How many charts can I fit?" version</button></div>
+    <div class="dash" id="dashMock">
+      <div class="kpis">
+        <div class="kpi"><div class="l">Total Sales</div><div class="v">₹4.2L</div></div>
+        <div class="kpi"><div class="l">Total Profit</div><div class="v">₹58K</div></div>
+        <div class="kpi"><div class="l">Orders</div><div class="v">148</div></div>
+        <div class="kpi"><div class="l">Customers</div><div class="v">61</div></div>
+      </div>
+      <div class="charts" id="dashCharts">
+        <div class="ch"><div class="l">Sales Trend</div><svg viewBox="0 0 100 40" preserveAspectRatio="none"><polyline fill="none" stroke="#1D6F42" stroke-width="2" points="0,32 15,26 30,28 45,18 60,20 75,10 90,12 100,4"/></svg></div>
+        <div class="ch"><div class="l">Regional Performance</div><div class="bars"><i style="--h:80%"></i><i style="--h:55%"></i><i style="--h:70%"></i><i style="--h:35%"></i></div></div>
+        <div class="ch"><div class="l">Top Products</div><div class="list"><div>Laptop <b>1.9L</b></div><div>Monitor <b>82K</b></div><div>Keyboard <b>41K</b></div></div></div>
+      </div>
+    </div>
+    <p class="hint-small" id="dashHint">Four KPIs plus three charts — each one answers a question the reader actually has.</p>
+
+    <h3 class="step-h">Step 2 — Dashboard vs Report</h3>
+    <div class="compare">
+      <div class="col analyst"><h4>📄 Report</h4><ul><li>Contains detailed information.</li><li>Read slowly, line by line.</li></ul></div>
+      <div class="col scientist"><h4>📊 Dashboard</h4><ul><li>Emphasizes key insights and decisions.</li><li>Understood at a glance.</li></ul></div>
+    </div>
+    <div class="callout"><b>Professional rule</b>A dashboard should answer questions. Not: <i>"How many charts can I fit on one screen?"</i> But: <i>"What does the user need to know?"</i></div>
+
+    <h3 class="step-h">Step 3 — KPI Thinking</h3>
+    <p>KPI means <b>Key Performance Indicator</b>. Tap each card to see what it measures:</p>
+    <div class="glossary" id="kpiGrid"></div>
+    <p>A useful dashboard should prioritize important KPIs rather than decorative graphics.</p>
+  </section>
+
+  <!-- ================= CONCEPT 10 ================= -->
+  <section id="concept10">
+    <div class="section-tag">Concept 10</div>
+    <h2 class="section-title">Power Query Fundamentals</h2>
+    <p class="section-sub">Step 1 — Why Power Query?</p>
+    <div class="objectives"><div class="label">🎯 Learning objectives — you'll understand:</div>
+      <ul><li>why repetitive manual cleaning is inefficient</li><li>what Power Query does</li><li>how repeatable transformation works</li></ul></div>
+    <p>Microsoft describes Power Query as a data connectivity and transformation technology used across products including Excel and Power BI.</p>
+    <h3 class="step-h">1. The Problem</h3>
+    <p>Imagine receiving this every month:</p>
+    <div class="pqfiles" id="pqFilesManual"><span class="pf">📄 January.xlsx</span><span class="pf">📄 February.xlsx</span><span class="pf">📄 March.xlsx</span><span class="pf">📄 April.xlsx</span></div>
+    <p>Every month you manually: remove columns · clean names · fix dates · remove duplicates · change data types. <b>That is repetitive.</b></p>
+    <h3 class="step-h">2. Better Approach</h3>
+    <p>Power Query allows you to record transformation steps. Then you can refresh the process when new data arrives.</p>
+    <div class="hchain"><span class="hn coral">Raw File</span><span class="ha">→</span><span class="hn">Power Query</span><span class="ha">→</span><span class="hn amber">Transformations</span><span class="ha">→</span><span class="hn sage">Clean Dataset</span></div>
+    <div class="card">
+      <h4>Simulation — recorded steps replay automatically on Refresh</h4>
+      <div class="pivotsim">
+        <div>
+          <div class="hint-small" style="margin:0 0 4px">Incoming files</div>
+          <div class="pqfiles" id="pqFiles"><span class="pf">📄 January.xlsx</span><span class="pf">📄 February.xlsx</span><span class="pf">📄 March.xlsx</span><span class="pf">📄 April.xlsx</span></div>
+          <div class="pickrow"><button class="simbtn" id="pqAdd">+ May.xlsx arrives</button><button class="simbtn primary" id="pqRefresh">🔄 Refresh</button></div>
+          <div class="pqlog" id="pqLog"></div>
+        </div>
+        <div class="pqsteps"><div class="lbl">Applied steps (recorded once)</div>
+          <div class="ps"><span class="dot"></span>Remove columns</div>
+          <div class="ps"><span class="dot"></span>Clean names</div>
+          <div class="ps"><span class="dot"></span>Fix dates</div>
+          <div class="ps"><span class="dot"></span>Remove duplicates</div>
+          <div class="ps"><span class="dot"></span>Change data types</div>
+        </div>
+      </div>
+    </div>
+    <div class="mindset-pair">
+      <div class="mp beginner"><div class="lbl">Beginner</div><q>I'll clean it manually again.</q></div>
+      <div class="mp pro"><div class="lbl">Professional</div><q>Can I make the transformation repeatable?</q></div>
+    </div>
+  </section>
+
+  <!-- ================= MINI PROJECT ================= -->
+  <section id="miniproject">
+    <div class="section-tag">Module 2 — Mini Project</div>
+    <h2 class="section-title">📊 Sales Performance Analysis in Excel</h2>
+    <p class="section-sub">You will create a professional Excel analysis from raw sales data.</p>
+    <div class="card"><h4>Dataset</h4><p>Create a CSV/Excel file with these columns. Use at least 50–100 records for meaningful practice.</p>
+      <div class="chipgrid"><span class="datum">Order_ID</span><span class="datum">Order_Date</span><span class="datum">Customer_ID</span><span class="datum">Customer_Name</span><span class="datum">Region</span><span class="datum">Category</span><span class="datum">Product</span><span class="datum">Quantity</span><span class="datum">Sales</span><span class="datum">Cost</span><span class="datum">Profit</span></div></div>
+    <h3 class="step-h">Project workflow</h3>
+    <div class="workflow">
+      <div class="wstep"><div class="wn">1</div><div><span class="tag">Start</span><h4>Raw Data</h4></div></div>
+      <div class="wstep"><div class="wn">2</div><div><span class="tag">Look</span><h4>Inspect</h4></div></div>
+      <div class="wstep"><div class="wn">3</div><div><span class="tag">Fix</span><h4>Clean</h4></div></div>
+      <div class="wstep"><div class="wn">4</div><div><span class="tag">Check</span><h4>Validate</h4></div></div>
+      <div class="wstep"><div class="wn">5</div><div><span class="tag">Compute</span><h4>Calculate KPIs</h4></div></div>
+      <div class="wstep"><div class="wn">6</div><div><span class="tag">Explore</span><h4>Analyze</h4></div></div>
+      <div class="wstep"><div class="wn">7</div><div><span class="tag">Summarize</span><h4>Pivot Tables</h4></div></div>
+      <div class="wstep"><div class="wn">8</div><div><span class="tag">Show</span><h4>Charts</h4></div></div>
+      <div class="wstep"><div class="wn">9</div><div><span class="tag">Assemble</span><h4>Dashboard</h4></div></div>
+      <div class="wstep"><div class="wn">10</div><div><span class="tag">The point of it all</span><h4>Business Insights</h4></div></div>
+    </div>
+    <h3 class="step-h">Project requirements — open each part</h3>
+    <details class="toolstep"><summary><span class="tico">1</span>Part 1 — Data Cleaning</summary><div class="tbody">You must:<ul><li>identify duplicates</li><li>inspect missing values</li><li>standardize text</li><li>check dates</li><li>check numeric fields</li></ul></div></details>
+    <details class="toolstep"><summary><span class="tico">2</span>Part 2 — Calculations</summary><div class="tbody">Calculate:<ul><li>Total Sales</li><li>Total Cost</li><li>Total Profit</li><li>Average Sales</li><li>Average Order Value</li><li>Number of Orders</li></ul></div></details>
+    <details class="toolstep"><summary><span class="tico">3</span>Part 3 — Analysis</summary><div class="tbody">Find:<ul><li>highest-selling product</li><li>highest-profit product</li><li>best region</li><li>worst region</li><li>monthly sales</li><li>category performance</li></ul></div></details>
+    <details class="toolstep"><summary><span class="tico">4</span>Part 4 — Pivot Tables</summary><div class="tbody">Create:<ul><li>Pivot 1: Sales by Region</li><li>Pivot 2: Profit by Category</li><li>Pivot 3: Monthly Sales</li><li>Pivot 4: Top Products</li></ul></div></details>
+    <details class="toolstep"><summary><span class="tico">5</span>Part 5 — Dashboard</summary><div class="tbody">Create one dashboard containing:<ul><li>Total Sales · Total Profit · Total Orders · Average Order Value</li><li>Sales by Region</li><li>Sales Trend</li><li>Profit by Category</li><li>Top 5 Products</li></ul></div></details>
+    <details class="toolstep"><summary><span class="tico">6</span>Part 6 — Business Insights</summary><div class="tbody">Write at least five insights. Example format:
+      <div class="insight">The South region generated the highest total sales but did not generate the highest profit, indicating that sales volume alone may not represent regional profitability.</div>
+      Notice that this is an <b>insight</b>, not simply a number.</div></details>
+  </section>
+
+  <!-- ================= MISTAKES ================= -->
+  <section id="mistakes">
+    <div class="section-tag">❌ Beginner mistakes in Module 2</div>
+    <h2 class="section-title">Seven traps to avoid</h2>
+    <div class="mistakes">
+      <div class="mistake"><span class="mx">01</span><p>Using formatting before understanding the data.</p></div>
+      <div class="mistake"><span class="mx">02</span><p>Deleting suspicious rows without investigating.</p></div>
+      <div class="mistake"><span class="mx">03</span><p>Treating missing values as zero.</p></div>
+      <div class="mistake"><span class="mx">04</span><p>Typing calculations manually instead of using formulas.</p></div>
+      <div class="mistake"><span class="mx">05</span><p>Using charts that don't answer a question.</p></div>
+      <div class="mistake"><span class="mx">06</span><p>Creating a dashboard with too many visuals.</p></div>
+      <div class="mistake"><span class="mx">07</span><p>Changing raw data directly without keeping an original copy.</p></div>
+    </div>
+  </section>
+
+  <!-- ================= MINDSET ================= -->
+  <section id="mindset">
+    <div class="section-tag">👨‍💻 Professional mindset</div>
+    <h2 class="section-title">Remember this workflow</h2>
+    <div class="flowchain">
+      <div class="fnode"><span class="n">1</span>Raw Data</div><div class="connector"></div>
+      <div class="fnode"><span class="n">2</span>Understand</div><div class="connector"></div>
+      <div class="fnode"><span class="n">3</span>Validate</div><div class="connector"></div>
+      <div class="fnode"><span class="n">4</span>Clean</div><div class="connector"></div>
+      <div class="fnode"><span class="n">5</span>Analyze</div><div class="connector"></div>
+      <div class="fnode"><span class="n">6</span>Visualize</div><div class="connector"></div>
+      <div class="fnode"><span class="n">7</span>Explain</div><div class="connector"></div>
+      <div class="fnode"><span class="n">8</span>Recommend</div>
+    </div>
+    <div class="callout"><b>The spreadsheet is not the final goal</b>The goal is: turn data into useful evidence for a decision.</div>
+    <h3 class="step-h">📌 Module 2 key takeaways — you should now understand</h3>
+    <div class="hchain" id="takeChain">
+      <span class="hn">Excel Fundamentals</span><span class="ha">→</span><span class="hn">Data Structure</span><span class="ha">→</span><span class="hn">Formulas</span><span class="ha">→</span><span class="hn">Conditional Logic</span><span class="ha">→</span><span class="hn">Data Cleaning</span><span class="ha">→</span><span class="hn">Filtering</span><span class="ha">→</span><span class="hn">Lookups</span><span class="ha">→</span><span class="hn">Pivot Tables</span><span class="ha">→</span><span class="hn">Dashboard Thinking</span><span class="ha">→</span><span class="hn hl">Power Query</span>
+    </div>
+  </section>
+
+  <!-- ================= ASSESSMENT ================= -->
+  <section id="assessment">
+    <div class="section-tag">🧠 Module 2 Assessment</div>
+    <h2 class="section-title">Test what you've learned</h2>
+    <p class="section-sub">Part A — Quiz · Part B — Manual Formula Test · Part C — Practical Test · Part D — Manual Answers</p>
+
+    <h3 class="step-h">Part A — Quiz</h3>
+    <p class="hint-small">Pick an answer for each question — the explanation appears after you choose.</p>
+    <div class="qa-list" id="partAList"></div>
+    <div class="quiz-score" id="partAScore">0 / 10 answered</div>
+
+    <h3 class="step-h">⌨️ Part B — Manual Formula Test</h3>
+    <p>Without looking back, write formulas for each task. The checker accepts any correct equivalent (spacing and case don't matter).</p>
+    <div class="fx-test" id="partBList"></div>
+
+    <h3 class="step-h">💻 Part C — Practical Test</h3>
+    <div class="card"><p>Create a new Excel file containing:</p>
+      <div class="chipgrid"><span class="datum">Student_ID</span><span class="datum">Name</span><span class="datum">Department</span><span class="datum">Attendance</span><span class="datum">Study_Hours</span><span class="datum">Marks</span></div>
+      <p>Enter at least 15 students. Then tick each task as you complete it:</p>
+      <div class="checklist" id="partCChecklist"></div>
+      <div class="progress-summary" id="partCText"></div><div class="progress-track"><div class="progress-fill" id="partCFill"></div></div></div>
+
+    <h3 class="step-h">📝 Part D — Manual Answers</h3>
+    <p>Answer in your own words, then compare with the model answer.</p>
+    <div class="qa-list" id="partDList"></div>
+  </section>
+
+  <!-- ================= COMPLETION ================= -->
+  <section id="completion">
+    <div class="section-tag">🏆 Module 2 completion</div>
+    <h2 class="section-title">Module 2 — Excel &amp; Spreadsheet Analytics</h2>
+    <p class="section-sub">Tick off each concept as you master it. Module 2 is complete only after the project and assessment are completed.</p>
+    <div class="checklist" id="checklist"></div>
+    <div class="progress-summary" id="progressText"></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <h3 class="step-h">What Module 2 prepares you for</h3>
+    <div class="flowchain">
+      <div class="fnode"><span class="n">1</span>Excel</div><div class="connector"></div>
+      <div class="fnode"><span class="n">2</span>Analytical Thinking</div><div class="connector"></div>
+      <div class="fnode"><span class="n">3</span>Data Cleaning</div><div class="connector"></div>
+      <div class="fnode"><span class="n">4</span>Business Questions</div><div class="connector"></div>
+      <div class="fnode"><span class="n">5</span>Structured Data</div><div class="connector"></div>
+      <div class="fnode"><span class="n">6</span>Python + pandas in Module 3/4</div><div class="connector"></div>
+      <div class="fnode"><span class="n">7</span>SQL</div><div class="connector"></div>
+      <div class="fnode"><span class="n">8</span>Power BI</div>
+    </div>
+  </section>
+
+  </main>
+</div>
+<footer>Data Science &amp; Analytics Course · Module 2 — Excel &amp; Spreadsheet Analytics</footer>
+
+<script>
+// ---------- scroll progress + active nav ----------
+const scrollbar=document.getElementById('scrollbar');
+window.addEventListener('scroll',()=>{const h=document.documentElement;scrollbar.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';});
+const navLinks=[...document.querySelectorAll('#treeNav a')];
+const sections=navLinks.map(a=>document.querySelector(a.getAttribute('href')));
+const navObserver=new IntersectionObserver(entries=>{entries.forEach(e=>{const idx=sections.indexOf(e.target);if(idx===-1)return;if(e.isIntersecting){navLinks.forEach(l=>l.classList.remove('active'));navLinks[idx].classList.add('active');}});},{rootMargin:'-20% 0px -70% 0px'});
+sections.forEach(s=>s&&navObserver.observe(s));
+
+// ---------- hero chips ----------
+[...document.querySelectorAll('#heroFlow .chip')].forEach((c,i)=>setTimeout(()=>c.classList.add('on'),300+i*350));
+
+// ---------- reveal animations ----------
+document.querySelectorAll('.flowchain, .hchain').forEach(chain=>{
+  const nodes=[...chain.querySelectorAll('.fnode, .hn')];
+  const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){nodes.forEach((n,i)=>setTimeout(()=>n.classList.add('show'),i*120));io.disconnect();}});},{threshold:.2});
+  io.observe(chain);
+});
+const wIo=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show');});},{threshold:.2});
+document.querySelectorAll('.wstep').forEach(w=>wIo.observe(w));
+
+// ---------- qcards ----------
+document.querySelectorAll('.qcard').forEach(card=>{card.addEventListener('click',()=>{card.classList.toggle('open');const a=card.querySelector('.ans');if(!a.textContent)a.textContent=card.dataset.ans;});});
+
+// ---------- generic QA + MCQ renderers ----------
+function renderQACards(id,items){const c=document.getElementById(id);items.forEach(item=>{const card=document.createElement('div');card.className='qa-card';
+  card.innerHTML=`<div class="qa-q"><span class="qn">Q${item.n}.</span><span>${item.q}</span></div><textarea placeholder="Type your answer here..."></textarea><div class="qa-actions"><button class="qa-toggle">Show model answer</button><span class="qa-status">not checked yet</span></div><div class="qa-model"><span class="lbl">Model answer</span>${item.a}</div>`;
+  const btn=card.querySelector('.qa-toggle'),model=card.querySelector('.qa-model'),status=card.querySelector('.qa-status'),ta=card.querySelector('textarea');
+  btn.addEventListener('click',()=>{const open=model.classList.toggle('open');btn.classList.toggle('shown',open);btn.textContent=open?'Hide model answer':'Show model answer';status.textContent=open?(ta.value.trim()?'compare your answer above ↑':'you skipped typing an answer'):'not checked yet';});
+  c.appendChild(card);});}
+let mcqAnswered=0;
+function renderMCQ(id,items,scoreId){const c=document.getElementById(id);items.forEach(item=>{const card=document.createElement('div');card.className='qa-card';
+  card.innerHTML=`<div class="qa-q"><span class="qn">Q${item.n}.</span><span>${item.q}</span></div><div class="mcq-opts">${item.options.map((o,i)=>`<button data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div><div class="mcq-explain"><span style="font-family:var(--mono);font-size:11px;color:var(--blue);display:block;margin-bottom:4px">Why</span>${item.explain}</div>`;
+  const btns=[...card.querySelectorAll('.mcq-opts button')],ex=card.querySelector('.mcq-explain');
+  btns.forEach(b=>b.addEventListener('click',()=>{if(card.dataset.answered)return;card.dataset.answered='1';btns.forEach((x,i)=>{x.disabled=true;if(i===item.correct)x.classList.add('correct');});if(Number(b.dataset.i)!==item.correct)b.classList.add('wrong');ex.classList.add('open');mcqAnswered++;if(scoreId)document.getElementById(scoreId).textContent=mcqAnswered+' / '+items.length+' answered';}));
+  c.appendChild(card);});}
+
+renderQACards('kc1',[
+ {n:1,q:'Why is Excel useful to a data analyst?',a:'It lets an analyst store, organize, calculate, analyze, chart and report on data quickly — especially for small/medium datasets, ad-hoc questions and sharing results with non-technical teams.'},
+ {n:2,q:'Give three situations where Excel may be more convenient than Python.',a:'A quick calculation on a small dataset; manually inspecting or eyeballing data; producing a business report or summary to share with a non-technical team.'},
+ {n:3,q:'Is Excel only a table-making tool? Explain.',a:'No. Beyond tables it calculates, applies logic, cleans data, looks up values, summarizes with Pivot Tables, builds charts and dashboards, and automates transformations with Power Query — it is one of the tools for solving a data problem.'}]);
+renderQACards('kc2',[
+ {n:1,q:'Why should you avoid storing "₹25,000" as plain text when you need to perform calculations?',a:'Text is not a number — SUM, AVERAGE and other formulas ignore or reject it. Keep the underlying value as 25000 and apply a currency format for display; formatting improves readability without corrupting the data.'}]);
+renderQACards('kc3a',[
+ {n:1,q:'What is the difference between COUNT, COUNTA and COUNTIF?',a:'COUNT counts only numeric cells. COUNTA counts every non-empty cell (numbers and text). COUNTIF counts only the cells that satisfy a condition, e.g. =COUNTIF(B2:B100,"AI&DS").'}]);
+
+// ---------- mini Excel simulator ----------
+const sheets={
+ Sales:{cols:['A','B','C','D'],hdr:['Customer_ID','Product','Region','Sales'],rows:[['C001','Laptop','South','65000'],['C002','Mouse','North','1200'],['C003','Laptop','West','70000'],['Total','','','=SUM(D2:D4)']],formulas:{D5:{f:'=SUM(D2:D4)',v:'136200'}}},
+ Customers:{cols:['A','B','C'],hdr:['Customer_ID','Name','City'],rows:[['C001','Arun','Chennai'],['C002','Ravi','Coimbatore'],['C003','Priya','Madurai'],['','','']],formulas:{}},
+ Products:{cols:['A','B','C'],hdr:['Product','Category','Price'],rows:[['Laptop','Electronics','65000'],['Mouse','Accessories','1200'],['Monitor','Electronics','12000'],['','','']],formulas:{}}};
+const xlGrid=document.getElementById('xlGrid'),xlName=document.getElementById('xlName'),xlFval=document.getElementById('xlFval'),xlHint=document.getElementById('xlHint');
+let curSheet='Sales',dragStart=null,dragging=false;
+function buildSheet(name){const s=sheets[name];curSheet=name;xlGrid.innerHTML='';xlGrid.style.gridTemplateColumns=`40px repeat(${s.cols.length},minmax(100px,1fr))`;
+  const corner=document.createElement('div');corner.className='c h';xlGrid.appendChild(corner);
+  s.cols.forEach(c=>{const d=document.createElement('div');d.className='c h';d.textContent=c;d.dataset.col=c;d.addEventListener('click',()=>{clearSel();[...xlGrid.querySelectorAll(`[data-col="${c}"]`)].forEach(x=>x.classList.add(x.classList.contains('h')?'hot':'rng'));const n=s.rows.length+1;xlName.textContent=`${c}1:${c}${n}`;xlFval.textContent='';xlHint.innerHTML=`<b>Column ${c}</b> — one variable (${s.hdr[s.cols.indexOf(c)]}), recorded for every row. The range <b>${c}1:${c}${n}</b> is selected.`;});xlGrid.appendChild(d);});
+  const all=[[...s.hdr],...s.rows];
+  all.forEach((row,ri)=>{const rn=ri+1;const rh=document.createElement('div');rh.className='c h';rh.textContent=rn;rh.dataset.row=rn;rh.addEventListener('click',()=>{clearSel();[...xlGrid.querySelectorAll(`[data-row="${rn}"]`)].forEach(x=>x.classList.add(x.classList.contains('h')?'hot':'rng'));xlName.textContent=`A${rn}:${s.cols[s.cols.length-1]}${rn}`;xlFval.textContent='';xlHint.innerHTML=rn===1?`<b>Row 1</b> — the header row: each cell names a column.`:`<b>Row ${rn}</b> — one complete record/observation.`;});xlGrid.appendChild(rh);
+    row.forEach((val,ci)=>{const addr=s.cols[ci]+rn;const d=document.createElement('div');d.className='c'+(ri===0?' hdr':'');d.dataset.col=s.cols[ci];d.dataset.row=rn;d.dataset.addr=addr;
+      const fm=s.formulas[addr];d.textContent=fm?fm.v:val;if(fm)d.classList.add('f');
+      d.addEventListener('mousedown',e=>{e.preventDefault();dragStart=addr;dragging=true;selectCell(d);});
+      d.addEventListener('mouseenter',()=>{if(dragging&&dragStart)selectRange(dragStart,addr);});
+      d.addEventListener('touchstart',()=>selectCell(d),{passive:true});
+      xlGrid.appendChild(d);});});
+  xlName.textContent='A1';xlFval.textContent=s.hdr[0];}
+function clearSel(){xlGrid.querySelectorAll('.sel,.rng,.hot').forEach(x=>x.classList.remove('sel','rng','hot'));}
+function selectCell(d){clearSel();d.classList.add('sel');const addr=d.dataset.addr;const fm=sheets[curSheet].formulas[addr];xlName.textContent=addr;xlFval.textContent=fm?fm.f:d.textContent;
+  if(fm)xlHint.innerHTML=`<b>Cell ${addr}</b> contains a formula. The cell shows the result <b>${fm.v}</b>, but the <b>formula bar</b> shows <b>${fm.f}</b> — this is how you audit a calculation.`;
+  else xlHint.innerHTML=`<b>Cell ${addr}</b> — intersection of column <b>${d.dataset.col}</b> and row <b>${d.dataset.row}</b>. The Name Box shows its address.`;}
+function selectRange(a,b){clearSel();const s=sheets[curSheet];const ca=s.cols.indexOf(a[0]),cb=s.cols.indexOf(b[0]),ra=+a.slice(1),rb=+b.slice(1);const c1=Math.min(ca,cb),c2=Math.max(ca,cb),r1=Math.min(ra,rb),r2=Math.max(ra,rb);let n=0;
+  for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++){const el=xlGrid.querySelector(`[data-addr="${s.cols[c]+r}"]`);if(el){el.classList.add('rng');n++;}}
+  const rng=`${s.cols[c1]}${r1}:${s.cols[c2]}${r2}`;xlName.textContent=rng;xlFval.textContent='';xlHint.innerHTML=`<b>Range ${rng}</b> — ${n} cells selected together. A formula like <b>=SUM(${rng})</b> would work on all of them.`;}
+document.addEventListener('mouseup',()=>{dragging=false;});
+document.querySelectorAll('#xlTabs span').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('#xlTabs span').forEach(x=>x.classList.remove('on'));t.classList.add('on');buildSheet(t.textContent);xlHint.innerHTML=`<b>Worksheet: ${t.textContent}</b> — one workbook (sales_analysis.xlsx) can hold several worksheets.`;}));
+buildSheet('Sales');
+
+// identify quiz
+const xlq=[{term:'sales_analysis.xlsx',t:'Workbook'},{term:'the "Sales" tab',t:'Worksheet'},{term:'B3',t:'Cell'},{term:'everything numbered 2',t:'Row'},{term:'everything under D',t:'Column'},{term:'D2:D4',t:'Range'}];
+const xlQuiz=document.getElementById('xlQuiz');let xlSolved=0;
+xlq.forEach(q=>{const row=document.createElement('div');row.className='quizrow';row.innerHTML=`<div class="term">${q.term}</div><div class="opts">${['Workbook','Worksheet','Cell','Row','Column','Range'].map(o=>`<button data-t="${o}">${o}</button>`).join('')}</div>`;xlQuiz.appendChild(row);let done=false;
+  row.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{if(done)return;if(b.dataset.t===q.t){b.classList.add('correct');done=true;xlSolved++;document.getElementById('xlQuizScore').textContent=xlSolved+' / 6 identified';}else{b.classList.add('wrong');setTimeout(()=>b.classList.remove('wrong'),500);}}));});
+
+// ---------- rows/cols hover ----------
+const rct=document.getElementById('rowColTable'),rch=document.getElementById('rowColHint');
+rct.querySelectorAll('thead th').forEach(th=>th.addEventListener('mouseenter',()=>{rch.innerHTML=`<b>Column: ${th.textContent}</b> — one variable, recorded for every record.`;}));
+rct.querySelectorAll('tbody tr').forEach((tr,i)=>tr.addEventListener('mouseenter',()=>{rch.innerHTML=`<b>Row ${i+1}</b> — one complete record: a single customer's order.`;}));
+
+// ---------- wide vs long ----------
+const longRows=[['Jan','Sales','10000'],['Feb','Sales','15000'],['Mar','Sales','12000'],['Jan','Profit','2000'],['Feb','Profit','3000'],['Mar','Profit','2400']];
+document.getElementById('btnLong').addEventListener('click',function(){this.classList.add('on');document.getElementById('btnWide').classList.remove('on');document.getElementById('shapeWide').style.display='none';const sl=document.getElementById('shapeLong');sl.style.display='';const lb=document.getElementById('longBody');lb.innerHTML='';longRows.forEach((r,i)=>{const tr=document.createElement('tr');tr.innerHTML=r.map(c=>`<td>${c}</td>`).join('');tr.style.opacity=0;tr.style.transition='opacity .4s';lb.appendChild(tr);setTimeout(()=>{tr.style.opacity=1;tr.querySelectorAll('td').forEach(td=>td.classList.add('moving'));setTimeout(()=>tr.querySelectorAll('td').forEach(td=>td.classList.remove('moving')),600);},i*160);});});
+document.getElementById('btnWide').addEventListener('click',function(){this.classList.add('on');document.getElementById('btnLong').classList.remove('on');document.getElementById('shapeWide').style.display='';document.getElementById('shapeLong').style.display='none';});
+
+// ---------- format sim ----------
+const fmts={plain:'25000',inr:'₹25,000',comma:'25,000',dec:'25000.00',pct:'2500000%'};
+document.querySelectorAll('#fmtPick button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#fmtPick button').forEach(x=>x.classList.remove('on'));b.classList.add('on');const d=document.getElementById('fmtDisp');d.textContent=fmts[b.dataset.f];d.style.animation='none';d.offsetHeight;d.style.animation='pop .4s ease';}));
+
+// ---------- formula simulator ----------
+const fxCells=document.getElementById('fxCells'),fxList=document.getElementById('fxList');
+[100,200,150,300,250].forEach((v,i)=>{const r=document.createElement('div');r.className='cr';r.innerHTML=`<span>A${i+2}</span><input value="${v}">`;fxCells.appendChild(r);});
+const fxDefs=[['Total','=SUM(A2:A6)',n=>n.reduce((a,b)=>a+b,0)],['Average','=AVERAGE(A2:A6)',n=>n.length?+(n.reduce((a,b)=>a+b,0)/n.length).toFixed(2):0],['Minimum','=MIN(A2:A6)',n=>n.length?Math.min(...n):0],['Maximum','=MAX(A2:A6)',n=>n.length?Math.max(...n):0],['Count','=COUNT(A2:A6)',n=>n.length]];
+fxDefs.forEach(d=>{const r=document.createElement('div');r.className='fxrow';r.innerHTML=`<div><span class="lbl">${d[0]}</span><code>${d[1]}</code></div><div class="res">0</div>`;fxList.appendChild(r);});
+function runFx(){const nums=[...fxCells.querySelectorAll('input')].map(i=>parseFloat(i.value)).filter(n=>!isNaN(n));[...fxList.children].forEach((r,i)=>{const res=r.querySelector('.res');const v=fxDefs[i][2](nums);if(res.textContent!=String(v)){res.textContent=v;r.classList.remove('pulse');r.offsetHeight;r.classList.add('pulse');}});}
+fxCells.querySelectorAll('input').forEach(i=>i.addEventListener('input',runFx));runFx();
+
+// ---------- SUM animation ----------
+const sumAnim=document.getElementById('sumAnim');
+function playSum(){const nums=[...fxCells.querySelectorAll('input')].map(i=>parseFloat(i.value)||0);sumAnim.innerHTML='';nums.forEach((n,i)=>{const s=document.createElement('span');s.className='sc';s.textContent=`A${i+2} = ${n}`;sumAnim.appendChild(s);if(i<nums.length-1){const p=document.createElement('span');p.className='plus';p.textContent='+';sumAnim.appendChild(p);}});const eq=document.createElement('span');eq.className='plus';eq.textContent='→';sumAnim.appendChild(eq);const tot=document.createElement('span');tot.className='tot';tot.textContent='Total = …';sumAnim.appendChild(tot);let run=0;
+  [...sumAnim.querySelectorAll('.sc')].forEach((s,i)=>setTimeout(()=>{s.classList.add('lit');run+=nums[i];tot.textContent='Total = '+run;},350*(i+1)));}
+document.getElementById('sumReplay').addEventListener('click',playSum);
+const sumIo=new IntersectionObserver(e=>{if(e[0].isIntersecting){playSum();sumIo.disconnect();}},{threshold:.4});sumIo.observe(sumAnim);
+
+// ---------- COUNT demo ----------
+const cvals=[['A2','85'],['A3','AI&DS'],['A4',''],['A5','92'],['A6','AI&DS'],['A7','Ravi'],['A8','78']];
+const countCells=document.getElementById('countCells');
+cvals.forEach(v=>{const r=document.createElement('div');r.className='cr';r.innerHTML=`<span>${v[0]}</span><i>${v[1]}</i>`;countCells.appendChild(r);});
+const cdefs=[['COUNT — numeric cells only','=COUNT(A2:A8)',v=>v!==''&&!isNaN(v)],['COUNTA — non-empty cells','=COUNTA(A2:A8)',v=>v!==''],['COUNTIF — cells equal to "AI&DS"','=COUNTIF(A2:A8,"AI&DS")',v=>v==='AI&DS']];
+const countList=document.getElementById('countList');
+cdefs.forEach((d,i)=>{const r=document.createElement('div');r.className='fxrow';r.style.cursor='pointer';const n=cvals.filter(v=>d[2](v[1])).length;r.innerHTML=`<div><span class="lbl">${d[0]}</span><code>${d[1]}</code></div><div class="res">${n}</div>`;r.addEventListener('click',()=>{[...countList.children].forEach(x=>x.style.borderColor='');r.style.borderColor='#1D6F42';[...countCells.querySelectorAll('i')].forEach((el,j)=>el.classList.toggle('on',d[2](cvals[j][1])));});countList.appendChild(r);if(i===0)setTimeout(()=>r.click(),0);});
+
+// ---------- SUMIF sim ----------
+const sumifData=[['South',10000],['North',15000],['South',12000],['West',20000]];
+document.querySelectorAll('#sumifPick button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#sumifPick button').forEach(x=>x.classList.remove('on'));b.classList.add('on');const r=b.dataset.r;const m=sumifData.filter(d=>d[0]===r);const s=m.reduce((a,d)=>a+d[1],0);document.getElementById('sumifCode').textContent=`=SUMIF(A2:A5,"${r}",B2:B5)`;document.getElementById('avgifCode').textContent=`=AVERAGEIF(A2:A5,"${r}",B2:B5)`;document.getElementById('sumifRes').textContent=s;document.getElementById('avgifRes').textContent=(s/m.length);['sumifRow','avgifRow'].forEach(id=>{const e=document.getElementById(id);e.classList.remove('pulse');e.offsetHeight;e.classList.add('pulse');});[...document.querySelectorAll('#sumifTable tbody tr')].forEach((tr,i)=>tr.classList.toggle('row-hot',sumifData[i][0]===r));}));
+document.querySelector('#sumifPick button').click();
+
+// ---------- IF / IFS sim ----------
+const ifRange=document.getElementById('ifRange'),ifVal=document.getElementById('ifVal'),ifVerdict=document.getElementById('ifVerdict'),ifsLadder=document.getElementById('ifsLadder');
+const ifs=[['B2>=90','Excellent',v=>v>=90,'90–100'],['B2>=75','Very Good',v=>v>=75,'75–89'],['B2>=60','Good',v=>v>=60,'60–74'],['B2>=50','Pass',v=>v>=50,'50–59'],['B2<50','Fail',v=>v<50,'Below 50']];
+ifs.forEach(d=>{const r=document.createElement('div');r.className='lr';r.innerHTML=`<span>${d[0]}</span><span>"${d[1]}"</span><span class="rg">${d[3]}</span>`;ifsLadder.appendChild(r);});
+function runIf(){const v=+ifRange.value;ifVal.textContent=v;ifVerdict.textContent=v>=50?'PASS':'FAIL';ifVerdict.className='verdict '+(v>=50?'pass':'fail');let hit=false;[...ifsLadder.children].forEach((r,i)=>{const on=!hit&&ifs[i][2](v);if(on)hit=true;r.classList.toggle('on',on);});}
+ifRange.addEventListener('input',runIf);runIf();
+
+// ---------- AND / OR ----------
+function runLogic(){const a=document.getElementById('c1').classList.contains('true'),b=document.getElementById('c2').classList.contains('true');document.querySelectorAll('.tcond').forEach(c=>c.querySelector('.st').textContent=c.classList.contains('true')?'TRUE':'FALSE');const andR=document.getElementById('andRes'),orR=document.getElementById('orRes');andR.className='tr '+((a&&b)?'t':'f');andR.querySelector('b').textContent=(a&&b)?'TRUE':'FALSE';orR.className='tr '+((a||b)?'t':'f');orR.querySelector('b').textContent=(a||b)?'TRUE':'FALSE';}
+document.querySelectorAll('.tcond').forEach(c=>c.addEventListener('click',()=>{c.classList.toggle('true');runLogic();}));runLogic();
+
+// ---------- duplicates ----------
+document.getElementById('dupBtn').addEventListener('click',()=>{const tr=document.querySelector('#dupTable tr.dup');tr.classList.add('gone');document.getElementById('dupMsg').innerHTML='<b>1 duplicate value found and removed; 2 unique values remain.</b> — but did you first check whether it was genuinely a duplicate?';});
+document.getElementById('dupReset').addEventListener('click',()=>{document.querySelector('#dupTable tr.dup').classList.remove('gone');document.getElementById('dupMsg').innerHTML='In Excel, use <b>Data → Remove Duplicates</b>.';});
+
+// ---------- TRIM sim ----------
+const trimIn=document.getElementById('trimIn'),trimOut=document.getElementById('trimOut'),trimStats=document.getElementById('trimStats');
+function runTrim(){const lines=trimIn.value.split('\n').filter(l=>l!=='');trimOut.innerHTML=lines.map(l=>{const vis=l.replace(/^ +| +$/g,m=>`<span class="sp">${'␣'.repeat(m.length)}</span>`);return `<div>${vis} → <span class="ok">"${l.trim()}"</span></div>`;}).join('');const before=new Set(lines).size,after=new Set(lines.map(l=>l.trim())).size;trimStats.innerHTML=`<div class="s"><div class="v">${before}</div><div class="l">unique values BEFORE trim (Excel sees these as different)</div></div><div class="s"><div class="v" style="color:#1D6F42">${after}</div><div class="l">unique regions AFTER trim</div></div>`;}
+trimIn.addEventListener('input',runTrim);runTrim();
+
+// ---------- sort / filter ----------
+const sfData=[[101,'Arun','AI&DS',85],[102,'Ravi','CSE',78],[103,'Priya','AI&DS',92],[104,'Meena','ECE',66],[105,'Karthik','CSE',88],[106,'Divya','AI&DS',74]];
+let sfSort=null;const sfBody=document.querySelector('#sfTable tbody');
+function renderSF(){let d=[...sfData];const f=document.getElementById('deptFilter').value;if(f)d=d.filter(r=>r[2]===f);if(sfSort==='desc')d.sort((a,b)=>b[3]-a[3]);if(sfSort==='asc')d.sort((a,b)=>a[3]-b[3]);if(sfSort==='az')d.sort((a,b)=>a[1].localeCompare(b[1]));if(sfSort==='za')d.sort((a,b)=>b[1].localeCompare(a[1]));sfBody.innerHTML=d.map((r,i)=>`<tr class="${sfSort==='desc'&&i===0?'top1':''}">${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');document.getElementById('sfHint').textContent=`Showing ${d.length} of ${sfData.length} rows`+(f?` — filtered to Department = ${f}`:'')+(sfSort==='desc'?' — top performer highlighted.':'.');}
+document.querySelectorAll('[data-sort]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-sort]').forEach(x=>x.classList.remove('on'));b.classList.add('on');sfSort=b.dataset.sort;renderSF();}));
+document.getElementById('deptFilter').addEventListener('change',renderSF);renderSF();
+
+// ---------- validation ----------
+const valid=['North','South','East','West'];
+document.getElementById('valFree').addEventListener('input',function(){const v=this.value.trim();const m=document.getElementById('valFreeMsg');if(!v){m.textContent='';return;}if(valid.includes(v)){m.className='msg good';m.textContent='✓ Accepted — but only because you happened to type it exactly right.';}else{m.className='msg bad';m.textContent=`✗ "${v}" is stored as a NEW category. Your region count is now wrong.`;}});
+document.getElementById('valList').addEventListener('change',function(){document.getElementById('valListMsg').textContent=this.value?`✓ "${this.value}" — always spelled the same way. Consistency guaranteed.`:'';});
+
+// ---------- XLOOKUP sim ----------
+document.querySelectorAll('#lkPick button').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.k;document.querySelectorAll('#lkPick button').forEach(x=>x.classList.remove('on'));b.classList.add('on');const out=document.getElementById('lkOut');const crows=[...document.querySelectorAll('#custTable tbody tr')];crows.forEach(r=>r.querySelectorAll('td').forEach(td=>td.classList.remove('scan','found')));const orow=document.querySelector(`#ordTable tr[data-k="${k}"]`);document.querySelectorAll('#ordTable tbody tr').forEach(r=>r.classList.remove('row-hot'));orow.classList.add('row-hot');out.textContent=`Step 1 — Key: ${k} taken from the Orders row…`;let i=0;
+  const step=()=>{if(i>0)crows[i-1].querySelectorAll('td')[0].classList.remove('scan');if(i>=crows.length)return;const r=crows[i];r.querySelectorAll('td')[0].classList.add('scan');out.textContent=`Step 2 — Searching Customers!A:A … checking row ${i+2}: ${r.dataset.k}`;if(r.dataset.k===k){setTimeout(()=>{r.querySelectorAll('td')[0].classList.remove('scan');r.querySelectorAll('td').forEach(td=>td.classList.add('found'));const name=r.querySelectorAll('td')[1].textContent;out.textContent=`Step 3 — Match found. Step 4 — Return Customers!B:B → "${name}"`;orow.querySelectorAll('td')[2].textContent=name;},350);return;}i++;setTimeout(step,450);};setTimeout(step,500);}));
+
+// ---------- pivot sim ----------
+const pvData=[['South','Laptop',10000],['North','Mouse',15000],['South','Mouse',12000],['West','Laptop',20000]];
+let pvRow='Region',pvAgg='Sum';
+function renderPivot(){const idx=pvRow==='Region'?0:1;const g={};pvData.forEach(r=>{(g[r[idx]]=g[r[idx]]||[]).push(r[2]);});const out=Object.entries(g).map(([k,v])=>[k,pvAgg==='Sum'?v.reduce((a,b)=>a+b,0):pvAgg==='Average'?v.reduce((a,b)=>a+b,0)/v.length:v.length]);document.getElementById('pvHead').textContent=pvRow;document.getElementById('pvAggHead').textContent=`${pvAgg} of Sales`;document.getElementById('pvBody').innerHTML=out.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');const mx=Math.max(...out.map(r=>r[1]));const bars=document.getElementById('pvBars');bars.innerHTML=out.map(r=>`<div class="pb"><span>${r[0]}</span><div class="bar"></div><span class="v">${r[1]}</span></div>`).join('');requestAnimationFrame(()=>[...bars.querySelectorAll('.bar')].forEach((b,i)=>setTimeout(()=>b.style.width=(out[i][1]/mx*100)+'%',60)));}
+document.querySelectorAll('#pvRows button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#pvRows button').forEach(x=>x.classList.remove('on'));b.classList.add('on');pvRow=b.dataset.v;renderPivot();}));
+document.querySelectorAll('#pvAgg button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#pvAgg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');pvAgg=b.dataset.v;renderPivot();}));
+renderPivot();
+
+// ---------- dashboard toggle ----------
+const busyExtra=`<div class="ch"><div class="l">Sales Trend</div><svg viewBox="0 0 100 40" preserveAspectRatio="none"><polyline fill="none" stroke="#1D6F42" stroke-width="2" points="0,32 15,26 30,28 45,18 60,20 75,10 90,12 100,4"/></svg></div><div class="ch"><div class="l">Regional Performance</div><div class="bars"><i style="--h:80%"></i><i style="--h:55%"></i><i style="--h:70%"></i><i style="--h:35%"></i></div></div><div class="ch"><div class="l">Top Products</div><div class="list"><div>Laptop <b>1.9L</b></div><div>Monitor <b>82K</b></div></div></div><div class="ch"><div class="l">Sales by Weekday</div><div class="bars"><i style="--h:40%"></i><i style="--h:60%"></i><i style="--h:50%"></i><i style="--h:70%"></i><i style="--h:65%"></i></div></div><div class="ch"><div class="l">Payment Mix</div><div class="bars"><i style="--h:90%"></i><i style="--h:30%"></i><i style="--h:20%"></i></div></div><div class="ch"><div class="l">Orders by Hour</div><svg viewBox="0 0 100 40" preserveAspectRatio="none"><polyline fill="none" stroke="#B4553C" stroke-width="2" points="0,30 20,12 40,25 60,8 80,28 100,15"/></svg></div>`;
+const goodCharts=document.getElementById('dashCharts').innerHTML;
+document.getElementById('dashBusy').addEventListener('click',function(){this.classList.add('on');document.getElementById('dashGood').classList.remove('on');document.getElementById('dashMock').classList.add('busy');document.getElementById('dashCharts').innerHTML=busyExtra;document.getElementById('dashHint').textContent='Six cramped charts — the reader now has to hunt for the answer. More visuals ≠ more insight.';});
+document.getElementById('dashGood').addEventListener('click',function(){this.classList.add('on');document.getElementById('dashBusy').classList.remove('on');document.getElementById('dashMock').classList.remove('busy');document.getElementById('dashCharts').innerHTML=goodCharts;document.getElementById('dashHint').textContent='Four KPIs plus three charts — each one answers a question the reader actually has.';});
+
+// ---------- KPI flip cards ----------
+const kpis=[{t:'Revenue',d:'Total money earned from sales in a period.'},{t:'Profit Margin',d:'Profit as a % of revenue — how much of each rupee you keep.'},{t:'Customer Retention',d:'Share of customers who keep buying over time.'},{t:'Conversion Rate',d:'% of visitors/leads who become paying customers.'},{t:'Average Order Value',d:'Total sales ÷ number of orders.'}];
+const kpiGrid=document.getElementById('kpiGrid');kpis.forEach(g=>{const c=document.createElement('div');c.className='gcard';c.innerHTML=`<div class="inner"><div class="gface gfront">${g.t}</div><div class="gface gback">${g.d}</div></div>`;c.addEventListener('click',()=>c.classList.toggle('flipped'));kpiGrid.appendChild(c);});
+
+// ---------- Power Query sim ----------
+let pqAdded=false;
+document.getElementById('pqAdd').addEventListener('click',function(){if(pqAdded)return;pqAdded=true;const s=document.createElement('span');s.className='pf new';s.textContent='📄 May.xlsx';s.style.opacity=0;s.style.transform='translateY(8px)';document.getElementById('pqFiles').appendChild(s);requestAnimationFrame(()=>{s.style.opacity=1;s.style.transform='none';});document.getElementById('pqLog').textContent='New file detected. No manual cleaning needed — just Refresh.';this.disabled=true;});
+document.getElementById('pqRefresh').addEventListener('click',()=>{const steps=[...document.querySelectorAll('.pqsteps .ps')];const log=document.getElementById('pqLog');steps.forEach(s=>s.classList.remove('run','ok'));const files=[...document.querySelectorAll('#pqFiles .pf')].length;steps.forEach((s,i)=>{setTimeout(()=>{s.classList.add('run');log.textContent=`Applying step ${i+1}/5 to ${files} files: ${s.textContent.trim()}…`;},i*500);setTimeout(()=>{s.classList.remove('run');s.classList.add('ok');if(i===steps.length-1)log.textContent=`✓ ${files} files transformed into one clean dataset in seconds — the same steps, every time.`;},i*500+450);});});
+
+// ---------- PART A MCQ ----------
+renderMCQ('partAList',[
+ {n:1,q:'What is a workbook?',correct:1,explain:'A workbook is the Excel file itself, e.g. sales_analysis.xlsx. It can contain several worksheets.',options:['A single tab inside an Excel file','The Excel file itself (e.g. sales_analysis.xlsx), which can hold several worksheets','A chart placed on a sheet','The formula bar']},
+ {n:2,q:'What is a worksheet?',correct:2,explain:'A worksheet is one sheet/tab inside a workbook — e.g. Sheet1 → Sales, Sheet2 → Customers.',options:['The whole .xlsx file','A named range like A1:A10','One sheet/tab inside a workbook (e.g. Sales, Customers, Products)','A Pivot Chart']},
+ {n:3,q:'What does =SUM(A2:A10) do?',correct:0,explain:'SUM adds every value in the range A2 through A10 and returns the total.',options:['Adds up all the values in cells A2 through A10','Counts how many cells are in A2:A10','Finds the largest value in A2:A10','Averages the values in A2:A10']},
+ {n:4,q:'What is the difference between COUNT() and COUNTA()?',correct:1,explain:'COUNT only counts numeric cells; COUNTA counts every non-empty cell, including text.',options:['They are identical','COUNT counts numeric cells; COUNTA counts all non-empty cells (numbers and text)','COUNTA counts only numbers; COUNT counts text','COUNT counts blanks']},
+ {n:5,q:'When would you use COUNTIF()?',correct:2,explain:'COUNTIF counts only the cells that satisfy a condition, e.g. how many rows contain "AI&DS".',options:['To add up a column','To find the maximum value','To count cells that meet a condition, e.g. =COUNTIF(B2:B100,"AI&DS")','To remove duplicates']},
+ {n:6,q:'What does IF() allow you to do?',correct:0,explain:'IF applies logic: it tests a condition and returns one value when true and another when false, e.g. Pass/Fail.',options:['Apply logic — return one value if a condition is true and another if it is false','Look up a value in another table','Summarize data by group','Remove extra spaces']},
+ {n:7,q:'Why are duplicates a data-quality problem?',correct:1,explain:'A repeated record gets counted or summed twice, inflating totals and counts — but you must investigate first, since two records for one customer may be legitimate.',options:['They make the file larger','They cause the same record to be counted or summed more than once, distorting totals and counts','Excel refuses to open files with duplicates','They only matter in Python']},
+ {n:8,q:'What is the purpose of XLOOKUP?',correct:2,explain:'XLOOKUP takes a search key, finds the matching row in another table, and returns a value from it — e.g. bringing a customer name into the orders table.',options:['To sort a column A to Z','To draw a chart','To search a key in another table and return the matching value (e.g. customer name for a Customer_ID)','To count blank cells']},
+ {n:9,q:'What is a Pivot Table?',correct:0,explain:'A Pivot Table summarizes a dataset by group (e.g. sales by region) without you calculating every group by hand.',options:['A tool that summarizes a dataset by group without manually calculating each group','A type of cell formatting','A way to validate data entry','A formula that trims spaces']},
+ {n:10,q:'Why is Power Query valuable for repeated data-cleaning tasks?',correct:1,explain:'Power Query records your transformation steps once; when new data arrives you simply refresh and the same steps run again automatically.',options:['It makes charts prettier','It records transformation steps once so they can be replayed with a refresh when new data arrives','It replaces the need for formulas','It only works in Power BI']}
+],'partAScore');
+
+// ---------- PART B formula checker ----------
+const norm=s=>s.replace(/\s+/g,'').toUpperCase().replace(/^=/,'').replace(/[“”]/g,'"');
+const partB=[
+ {n:1,q:'Calculate total of A2:A20',ph:'=SUM(...)',ok:['SUM(A2:A20)'],hint:'Which function adds a range? Wrap A2:A20 in it.',ans:'=SUM(A2:A20)'},
+ {n:2,q:'Calculate average of B2:B20',ph:'=AVERAGE(...)',ok:['AVERAGE(B2:B20)'],hint:'Same shape as SUM, different function name.',ans:'=AVERAGE(B2:B20)'},
+ {n:3,q:'Count cells containing South in C2:C100',ph:'=COUNTIF(range, criteria)',ok:['COUNTIF(C2:C100,"SOUTH")'],hint:'You need a count with a condition. The condition text goes in quotes.',ans:'=COUNTIF(C2:C100,"South")'},
+ {n:4,q:'Calculate South-region sales where Region = A2:A100 and Sales = D2:D100',ph:'=SUMIF(range, criteria, sum_range)',ok:['SUMIF(A2:A100,"SOUTH",D2:D100)','SUMIFS(D2:D100,A2:A100,"SOUTH")'],hint:'A sum with a condition: check the Region range, then add from the Sales range.',ans:'=SUMIF(A2:A100,"South",D2:D100)'},
+ {n:5,q:'Create Pass / Fail based on marks in B2, where 50 is the passing mark',ph:'=IF(condition, value_if_true, value_if_false)',ok:['IF(B2>=50,"PASS","FAIL")','IF(B2<50,"FAIL","PASS")'],hint:'Test B2 against 50, return "Pass" when true and "Fail" when false.',ans:'=IF(B2>=50,"Pass","Fail")'}];
+const pbList=document.getElementById('partBList');
+partB.forEach(p=>{const d=document.createElement('div');d.className='fx-q';d.innerHTML=`<div class="qa-q"><span class="qn">Q${p.n}.</span><span>${p.q}</span></div><input placeholder="${p.ph}" spellcheck="false"><div class="row"><button class="simbtn primary">Check</button><button class="simbtn">💡 Hint</button><button class="simbtn">Show answer</button><span class="fb"></span></div>`;pbList.appendChild(d);const inp=d.querySelector('input'),fb=d.querySelector('.fb'),[chk,hnt,shw]=d.querySelectorAll('button');
+  chk.addEventListener('click',()=>{const v=norm(inp.value);if(p.ok.includes(v)){fb.className='fb good';fb.textContent='✓ Correct';}else{fb.className='fb bad';fb.textContent=v?'✗ Not quite — check the function name, ranges and quotes.':'Type a formula first.';}});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk.click();});
+  hnt.addEventListener('click',()=>{fb.className='fb';fb.textContent='💡 '+p.hint;});
+  shw.addEventListener('click',()=>{fb.className='fb good';fb.textContent='Answer: '+p.ans;});});
+
+// ---------- PART C checklist ----------
+function buildChecklist(items,listId,textId,fillId){const el=document.getElementById(listId),t=document.getElementById(textId),f=document.getElementById(fillId);const upd=()=>{const d=el.querySelectorAll('.checkitem.done').length;t.textContent=d+' / '+items.length+' complete';f.style.width=(d/items.length*100)+'%';};items.forEach(txt=>{const i=document.createElement('div');i.className='checkitem';i.innerHTML=`<div class="box">✓</div><span class="label">${txt}</span>`;i.addEventListener('click',()=>{i.classList.toggle('done');upd();});el.appendChild(i);});upd();}
+buildChecklist(['Calculate average marks','Find highest marks','Find lowest marks','Count students in each department','Identify students with attendance below 75%','Create a Pass/Fail column','Create a Pivot Table showing department-wise average marks','Create one meaningful chart'],'partCChecklist','partCText','partCFill');
+
+// ---------- PART D ----------
+renderQACards('partDList',[
+ {n:1,q:'Why should raw data be kept separate from analysis?',a:'So the original is never corrupted. If a formula, filter or edit goes wrong you can always return to the untouched source — Raw_Data, Analysis and Dashboard belong on separate sheets.'},
+ {n:2,q:'Why is a missing value not automatically treated as zero?',a:'A blank may mean not entered, not available, lost, or not applicable. Writing 0 invents a measurement that never happened and distorts averages and totals. A missing value is information about what is missing.'},
+ {n:3,q:'What makes a dashboard professional?',a:'It answers the questions the user actually needs answered — prioritizing important KPIs and a few purposeful charts — instead of cramming as many visuals as possible onto one screen.'},
+ {n:4,q:'Explain the difference between a calculation and an insight.',a:'A calculation is a number ("South sales = ₹22,000"). An insight interprets it for a decision ("South has the highest sales but not the highest profit, so volume alone doesn\'t mean profitability").'}]);
+
+// ---------- completion checklist ----------
+buildChecklist(['Concept 1 — Understanding Excel','Concept 2 — Working with Data','Concept 3 — Essential Formulas','Concept 4 — Conditional Logic','Concept 5 — Data Cleaning','Concept 6 — Sorting & Filtering','Concept 7 — Lookups','Concept 8 — Pivot Tables','Concept 9 — Dashboard Thinking','Concept 10 — Power Query Fundamentals','Mini Project','Assessment'],'checklist','progressText','progressFill');
+
+</script>
+</body>
+</html>
